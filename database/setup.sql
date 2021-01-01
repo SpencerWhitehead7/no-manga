@@ -34,6 +34,8 @@ CREATE TABLE "magazine" (
   "demo" varchar REFERENCES "demo"("name")
     NOT NULL
 );
+CREATE INDEX "idx_magazine_name" ON "magazine"("name");
+CREATE INDEX "idx_magazine_demo" ON "magazine"("demo");
 
 CREATE TABLE "mangaka" (
   "id" int
@@ -45,6 +47,7 @@ CREATE TABLE "mangaka" (
   "description" varchar
     NOT NULL CONSTRAINT no_empty_description CHECK (not_empty("description"))
 );
+CREATE INDEX "idx_mangaka_name" ON "mangaka"("name");
 
 CREATE TABLE "manga" (
   "id" int
@@ -61,6 +64,8 @@ CREATE TABLE "manga" (
     NOT NULL,
   "end_date" date
 );
+CREATE INDEX "idx_manga_name" ON "manga"("name");
+CREATE INDEX "idx_manga_demo" ON "manga"("demo");
 
 CREATE TABLE "chapter" (
   "manga_id" int REFERENCES "manga"("id")
@@ -75,6 +80,8 @@ CREATE TABLE "chapter" (
     NOT NULL,
   PRIMARY KEY ("manga_id", "chapter_num")
 );
+CREATE INDEX "idx_chapter_manga_id" ON "chapter"("manga_id");
+CREATE INDEX "idx_chapter_updated_at" ON "chapter"("updated_at");
 
 CREATE TABLE "genre" (
   "name" varchar
@@ -89,6 +96,8 @@ CREATE TABLE "magazine_manga" (
   "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
     NOT NULL
 );
+CREATE INDEX "idx_magazine_manga_magazine_id" ON "magazine_manga"("magazine_id");
+CREATE INDEX "idx_magazine_manga_manga_id" ON "magazine_manga"("manga_id");
 
 CREATE TABLE "manga_mangaka_job" (
   "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
@@ -99,6 +108,8 @@ CREATE TABLE "manga_mangaka_job" (
     NOT NULL,
   UNIQUE("manga_id", "mangaka_id")
 );
+CREATE INDEX "idx_manga_mangaka_job_manga_id" ON "manga_mangaka_job"("manga_id");
+CREATE INDEX "idx_manga_mangaka_job_mangaka_id" ON "manga_mangaka_job"("mangaka_id");
 
 CREATE TABLE "manga_genre" (
   "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
@@ -107,3 +118,5 @@ CREATE TABLE "manga_genre" (
     NOT NULL,
   UNIQUE("manga_id", "genre")
 );
+CREATE INDEX "idx_manga_genre_manga_id" ON "manga_genre"("manga_id");
+CREATE INDEX "idx_manga_genre_genre" ON "manga_genre"("genre");
