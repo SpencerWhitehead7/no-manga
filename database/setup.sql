@@ -120,3 +120,17 @@ CREATE TABLE "manga_genre" (
 );
 CREATE INDEX "idx_manga_genre_manga_id" ON "manga_genre"("manga_id");
 CREATE INDEX "idx_manga_genre_genre" ON "manga_genre"("genre");
+
+-- HOOKS
+
+-- auto set updated_at
+CREATE OR REPLACE FUNCTION trigger_set_updated_at() RETURNS TRIGGER AS $$
+  BEGIN
+    NEW.updated_at := NOW();
+    RETURN NEW;
+  END;
+$$ LANGUAGE PLPGSQL;
+
+CREATE TRIGGER "set_updated_at"
+BEFORE INSERT OR UPDATE ON "chapter"
+FOR EACH ROW EXECUTE PROCEDURE trigger_set_updated_at();
