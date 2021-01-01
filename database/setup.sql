@@ -134,3 +134,26 @@ $$ LANGUAGE PLPGSQL;
 CREATE TRIGGER "set_updated_at"
 BEFORE INSERT OR UPDATE ON "chapter"
 FOR EACH ROW EXECUTE PROCEDURE trigger_set_updated_at();
+
+-- INITIAL DATA
+
+-- these two tables are essentially sql db enums
+-- using reference tables instead of the postgresql enum datatype
+-- because they're more "standard" and easier to modify if necessary
+-- but these are my only expected values, at least for now
+
+INSERT INTO demo
+VALUES
+('kodomo'),
+('shonen'),
+('shojo'),
+('seinen'),
+('josei'),
+('seijin'),
+('mina');
+
+INSERT INTO job
+VALUES
+('author'),
+('artist'),
+('author_artist');
