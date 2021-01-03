@@ -53,3 +53,28 @@ CREATE TABLE "genre" (
   "name" varchar
     PRIMARY KEY
 );
+
+-- RELATIONS
+
+CREATE TABLE "magazine_manga" (
+  "magazine_id" int REFERENCES "magazine"("id") ON DELETE CASCADE
+    NOT NULL,
+  "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
+    NOT NULL
+);
+
+CREATE TABLE "manga_mangaka_job" (
+  "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
+    NOT NULL,
+  "mangaka_id" int REFERENCES "mangaka"("id") ON DELETE CASCADE
+    NOT NULL,
+  "job"  varchar REFERENCES "job"("name") ON DELETE CASCADE
+    NOT NULL
+);
+
+CREATE TABLE "manga_genre" (
+  "manga_id" int REFERENCES "manga"("id") ON DELETE CASCADE
+    NOT NULL,
+  "genre" varchar REFERENCES "genre"("name") ON DELETE CASCADE
+    NOT NULL
+);
