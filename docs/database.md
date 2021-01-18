@@ -10,6 +10,7 @@ $ dropdb no-manga
 $ createdb no-manga
 $ psql -d no-manga
 $ \i path-to-database/setup.sql
+$ \i path-to-database/seed.sql
 $ \q
 (to quit psql)
 ```
