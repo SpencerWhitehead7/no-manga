@@ -1,28 +1,70 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
+# GraphQL schema for no-manga.
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
+scalar Time
 
-type User {
+type Manga {
   id: ID!
   name: String!
+  otherNames: [String!]!
+  description: String!
+  demo: String!
+  startDate: Time!
+  endDate: Time
+  genres: [String!]!
+  chapterCount: Int!
+  chapterList: [Chapter!]!
+  mangakaList: [SeriesMangaka!]!
+  magazineList: [Magazine!]!
+}
+
+type Chapter {
+  id: String!
+  chapterNum: Float!
+  name: String
+  pageCount: Int!
+  updatedAt: Time!
+  manga: Manga!
+}
+
+# Mangaka + job field (job refers to their role on a specific series)
+# so it only makes sense in the context of a Manga
+# GQL doesn't have a native "extends" functionality, unfortunately
+type SeriesMangaka {
+  id: ID!
+  name: String!
+  otherNames: [String!]!
+  description: String!
+  job: String!
+  mangaList: [Manga!]!
+}
+
+type Mangaka {
+  id: ID!
+  name: String!
+  otherNames: [String!]!
+  description: String!
+  mangaList: [Manga!]!
+}
+
+type Magazine {
+  id: ID!
+  name: String!
+  otherNames: [String!]!
+  description: String!
+  demo: String!
+  mangaList: [Manga!]!
 }
 
 type Query {
-  todos: [Todo!]!
-}
+  manga(ID: Int!): Manga
+  mangaList: [Manga!]!
 
-input NewTodo {
-  text: String!
-  userId: String!
-}
+  chapter(mangaID: Int!, chapterNum: Float!): Chapter
+  chapterList: [Chapter!]!
 
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  mangaka(ID: Int!): Mangaka
+  mangakaList: [Mangaka!]!
+
+  magazine(ID: Int!): Magazine
+  magazineList: [Magazine!]!
 }

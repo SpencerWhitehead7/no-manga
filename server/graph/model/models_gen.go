@@ -2,12 +2,56 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+import (
+	"time"
+)
+
+type Chapter struct {
+	ID         string    `json:"id"`
+	ChapterNum float64   `json:"chapterNum"`
+	Name       *string   `json:"name"`
+	PageCount  int       `json:"pageCount"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+	Manga      *Manga    `json:"manga"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type Magazine struct {
+	ID          int      `json:"id"`
+	Name        string   `json:"name"`
+	OtherNames  []string `json:"otherNames"`
+	Description string   `json:"description"`
+	Demo        string   `json:"demo"`
+	MangaList   []*Manga `json:"mangaList"`
+}
+
+type Manga struct {
+	ID           int              `json:"id"`
+	Name         string           `json:"name"`
+	OtherNames   []string         `json:"otherNames"`
+	Description  string           `json:"description"`
+	Demo         string           `json:"demo"`
+	StartDate    time.Time        `json:"startDate"`
+	EndDate      *time.Time       `json:"endDate"`
+	Genres       []string         `json:"genres"`
+	ChapterCount int              `json:"chapterCount"`
+	ChapterList  []*Chapter       `json:"chapterList"`
+	MangakaList  []*SeriesMangaka `json:"mangakaList"`
+	MagazineList []*Magazine      `json:"magazineList"`
+}
+
+type Mangaka struct {
+	ID          int      `json:"id"`
+	Name        string   `json:"name"`
+	OtherNames  []string `json:"otherNames"`
+	Description string   `json:"description"`
+	MangaList   []*Manga `json:"mangaList"`
+}
+
+type SeriesMangaka struct {
+	ID          int      `json:"id"`
+	Name        string   `json:"name"`
+	OtherNames  []string `json:"otherNames"`
+	Description string   `json:"description"`
+	Job         string   `json:"job"`
+	MangaList   []*Manga `json:"mangaList"`
 }
