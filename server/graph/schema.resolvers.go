@@ -11,33 +11,39 @@ import (
 	"github.com/SpencerWhitehead7/no-manga/server/graph/model"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	todo := &model.Todo{
-		Text:   input.Text,
-		ID:     fmt.Sprintf("T%d", 1),
-		UserID: input.UserID,
-	}
-	r.todos = append(r.todos, todo)
-	return todo, nil
+func (r *queryResolver) Manga(ctx context.Context, id int) (*model.Manga, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return r.todos, nil
+func (r *queryResolver) MangaList(ctx context.Context) ([]*model.Manga, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *todoResolver) User(ctx context.Context, obj *model.Todo) (*model.User, error) {
-	return &model.User{ID: obj.UserID, Name: "user " + obj.UserID}, nil
+func (r *queryResolver) Chapter(ctx context.Context, mangaID int, chapterNum float64) (*model.Chapter, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
+func (r *queryResolver) ChapterList(ctx context.Context) ([]*model.Chapter, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Mangaka(ctx context.Context, id int) (*model.Mangaka, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) MangakaList(ctx context.Context) ([]*model.Mangaka, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Magazine(ctx context.Context, id int) (*model.Magazine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) MagazineList(ctx context.Context) ([]*model.Magazine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-// Todo returns generated.TodoResolver implementation.
-func (r *Resolver) Todo() generated.TodoResolver { return &todoResolver{r} }
-
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type todoResolver struct{ *Resolver }
