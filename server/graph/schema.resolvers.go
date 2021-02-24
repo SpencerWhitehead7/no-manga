@@ -36,7 +36,7 @@ func (r *queryResolver) Manga(ctx context.Context, id int) (*model.Manga, error)
 }
 
 func (r *queryResolver) MangaList(ctx context.Context) ([]*model.Manga, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.MangaRepo.GetAll(ctx)
 }
 
 func (r *queryResolver) Chapter(ctx context.Context, mangaID int, chapterNum float64) (*model.Chapter, error) {
