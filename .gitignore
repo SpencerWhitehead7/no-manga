@@ -1,2 +1,5 @@
 # notes
 ___.txt
+
+# prod env vars
+.env.prod
