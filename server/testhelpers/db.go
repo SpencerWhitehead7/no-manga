@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"testing"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/joho/godotenv"
@@ -29,4 +30,26 @@ func GetDbpool() *pgxpool.Pool {
 	}
 
 	return db
+}
+
+// ClearDB truncates all tables and resets ID counters.
+func ClearDB(t *testing.T, db *pgxpool.Pool) {
+	_, err := db.Exec(
+		context.Background(),
+		`
+			TRUNCATE
+			magazine,
+			mangaka,
+			manga,
+			chapter,
+			genre,
+			magazine_manga,
+			manga_mangaka_job,
+			manga_genre
+			RESTART IDENTITY
+		`,
+	)
+	if err != nil {
+		t.Errorf("Failed to clear DB: %v", err)
+	}
 }
