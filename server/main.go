@@ -14,6 +14,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
+func getRouter(db *pgxpool.Pool) *gin.Engine {
+	r := gin.Default()
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	})
+	r.POST("/gql", graph.GQLHandler(db))
+	r.GET("/", graph.PlaygroundHandler())
+
+	return r
+}
+
 func main() {
 	env := os.Getenv("ENV")
 
@@ -33,14 +45,7 @@ func main() {
 	}
 	defer db.Close()
 
-	r := gin.Default()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "pong"})
-	})
-
-	r.POST("/gql", graph.GQLHandler(db))
-	r.GET("/", graph.PlaygroundHandler())
+	r := getRouter(db)
 
 	r.Run() // listen and serve on 8080
 }
