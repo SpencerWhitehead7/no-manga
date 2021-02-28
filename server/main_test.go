@@ -28,7 +28,7 @@ func callRoute(method string, path string) *httptest.ResponseRecorder {
 	var req *http.Request
 	var _ error
 	if path == "/gql" {
-		req, _ = http.NewRequest(method, path, strings.NewReader(`{}`))
+		req, _ = http.NewRequest(method, path, strings.NewReader(`{"query":"{mangaList {id}}"}`))
 		req.Header.Add("Content-Type", "application/json")
 	} else {
 		req, _ = http.NewRequest(method, path, nil)
@@ -70,9 +70,15 @@ func TestGQL(t *testing.T) {
 	t.Parallel()
 	w := callRoute(http.MethodPost, "/gql")
 
-	expect := http.StatusOK
-	actual := w.Code
-	if expect != actual {
-		t.Errorf("\nCode\n  expect: %v\n  actual: %v", expect, actual)
+	expectCode := http.StatusOK
+	actualCode := w.Code
+	if expectCode != actualCode {
+		t.Errorf("\nCode\n  expect: %v\n  actual: %v", expectCode, actualCode)
+	}
+
+	expectBody := `{"data":{"mangaList":[]}}`
+	actualBody := w.Body.String()
+	if expectBody != actualBody {
+		t.Errorf("\nBody\n  expect: %v\n  actual: %v", expectBody, actualBody)
 	}
 }
