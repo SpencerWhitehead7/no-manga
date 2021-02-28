@@ -11,6 +11,26 @@ import (
 	"github.com/SpencerWhitehead7/no-manga/server/graph/model"
 )
 
+func (r *mangaResolver) Genres(ctx context.Context, obj *model.Manga) ([]string, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mangaResolver) ChapterCount(ctx context.Context, obj *model.Manga) (int, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mangaResolver) ChapterList(ctx context.Context, obj *model.Manga) ([]*model.Chapter, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mangaResolver) MangakaList(ctx context.Context, obj *model.Manga) ([]*model.SeriesMangaka, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mangaResolver) MagazineList(ctx context.Context, obj *model.Manga) ([]*model.Magazine, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *queryResolver) Manga(ctx context.Context, id int) (*model.Manga, error) {
 	panic(fmt.Errorf("not implemented"))
 }
@@ -43,7 +63,11 @@ func (r *queryResolver) MagazineList(ctx context.Context) ([]*model.Magazine, er
 	panic(fmt.Errorf("not implemented"))
 }
 
+// Manga returns generated.MangaResolver implementation.
+func (r *Resolver) Manga() generated.MangaResolver { return &mangaResolver{r} }
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+type mangaResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

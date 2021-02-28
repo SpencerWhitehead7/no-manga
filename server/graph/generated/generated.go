@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Manga() MangaResolver
 	Query() QueryResolver
 }
 
@@ -105,6 +106,13 @@ type ComplexityRoot struct {
 	}
 }
 
+type MangaResolver interface {
+	Genres(ctx context.Context, obj *model.Manga) ([]string, error)
+	ChapterCount(ctx context.Context, obj *model.Manga) (int, error)
+	ChapterList(ctx context.Context, obj *model.Manga) ([]*model.Chapter, error)
+	MangakaList(ctx context.Context, obj *model.Manga) ([]*model.SeriesMangaka, error)
+	MagazineList(ctx context.Context, obj *model.Manga) ([]*model.Magazine, error)
+}
 type QueryResolver interface {
 	Manga(ctx context.Context, id int) (*model.Manga, error)
 	MangaList(ctx context.Context) ([]*model.Manga, error)
@@ -1372,14 +1380,14 @@ func (ec *executionContext) _Manga_genres(ctx context.Context, field graphql.Col
 		Object:     "Manga",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Genres, nil
+		return ec.resolvers.Manga().Genres(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1407,14 +1415,14 @@ func (ec *executionContext) _Manga_chapterCount(ctx context.Context, field graph
 		Object:     "Manga",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ChapterCount, nil
+		return ec.resolvers.Manga().ChapterCount(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1442,14 +1450,14 @@ func (ec *executionContext) _Manga_chapterList(ctx context.Context, field graphq
 		Object:     "Manga",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ChapterList, nil
+		return ec.resolvers.Manga().ChapterList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1477,14 +1485,14 @@ func (ec *executionContext) _Manga_mangakaList(ctx context.Context, field graphq
 		Object:     "Manga",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MangakaList, nil
+		return ec.resolvers.Manga().MangakaList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1512,14 +1520,14 @@ func (ec *executionContext) _Manga_magazineList(ctx context.Context, field graph
 		Object:     "Manga",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MagazineList, nil
+		return ec.resolvers.Manga().MagazineList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3498,60 +3506,105 @@ func (ec *executionContext) _Manga(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Manga_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Manga_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "otherNames":
 			out.Values[i] = ec._Manga_otherNames(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 			out.Values[i] = ec._Manga_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "demo":
 			out.Values[i] = ec._Manga_demo(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "startDate":
 			out.Values[i] = ec._Manga_startDate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "endDate":
 			out.Values[i] = ec._Manga_endDate(ctx, field, obj)
 		case "genres":
-			out.Values[i] = ec._Manga_genres(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Manga_genres(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "chapterCount":
-			out.Values[i] = ec._Manga_chapterCount(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Manga_chapterCount(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "chapterList":
-			out.Values[i] = ec._Manga_chapterList(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Manga_chapterList(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "mangakaList":
-			out.Values[i] = ec._Manga_mangakaList(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Manga_mangakaList(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "magazineList":
-			out.Values[i] = ec._Manga_magazineList(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Manga_magazineList(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
