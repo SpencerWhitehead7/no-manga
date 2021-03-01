@@ -134,6 +134,26 @@ func TestManga(t *testing.T) {
 				`{"id":"1__2"}` +
 				`]}}}`,
 		},
+		{
+			des: "resolves 0 when no associated chapters",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+			},
+			query:  `{"query":"{manga(ID: 1) {chapterCount}}"}`,
+			expect: `{"data":{"manga":{"chapterCount":0}}}`,
+		},
+		{
+			des: "resolves chapterCount",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+			},
+			query:  `{"query":"{manga(ID: 1) {chapterCount}}"}`,
+			expect: `{"data":{"manga":{"chapterCount":2}}}`,
+		},
 	}
 
 	for _, test := range tests {
@@ -274,6 +294,26 @@ func TestMangaList(t *testing.T) {
 				`{"id":"1__1"},` +
 				`{"id":"1__2"}` +
 				`]}]}}`,
+		},
+		{
+			des: "resolves 0 when no associated chapters",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+			},
+			query:  `{"query":"{mangaList {chapterCount}}"}`,
+			expect: `{"data":{"mangaList":[{"chapterCount":0},{"chapterCount":1}]}}`,
+		},
+		{
+			des: "resolves chapterCount",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+			},
+			query:  `{"query":"{mangaList {chapterCount}}"}`,
+			expect: `{"data":{"mangaList":[{"chapterCount":2}]}}`,
 		},
 		{
 			des: "resolves mangaList sorted by name",

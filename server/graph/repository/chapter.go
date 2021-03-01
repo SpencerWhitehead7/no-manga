@@ -79,6 +79,23 @@ func (r *Chapter) GetAll(ctx context.Context, manga *model.Manga) ([]*model.Chap
 	return list, nil
 }
 
+// GetChapterCount returns number of chapters of the specified manga.
+func (r *Chapter) GetChapterCount(ctx context.Context, manga *model.Manga) (int, error) {
+	var count int
+
+	err := r.db.QueryRow(
+		ctx,
+		"SELECT count(*) FROM chapter WHERE manga_id = $1",
+		manga.ID,
+	).Scan(&count)
+	if err != nil {
+		log.Println("ChapterCount row scan failed:", err)
+		return count, err
+	}
+
+	return count, nil
+}
+
 // ChapterFactory creates new ChapterRepositories.
 func ChapterFactory(db *pgxpool.Pool) *Chapter {
 	return &Chapter{db: db}
