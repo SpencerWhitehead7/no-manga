@@ -117,6 +117,38 @@ func TestMangaChapterList(t *testing.T) {
 	testhelpers.ClearDB(t, db)
 }
 
+func TestMangaChapterCountNoChapters(t *testing.T) {
+	testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+
+	w := testhelpers.CallGQL(r, `{"query":"{manga(ID: 1) {chapterCount}}"}`)
+
+	expect := `{"data":{"manga":{"chapterCount":0}}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+
+	testhelpers.ClearDB(t, db)
+}
+
+func TestMangaChapterCount(t *testing.T) {
+	m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+	testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+	testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+
+	w := testhelpers.CallGQL(r, `{"query":"{manga(ID: 1) {chapterCount}}"}`)
+
+	expect := `{"data":{"manga":{"chapterCount":2}}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+
+	testhelpers.ClearDB(t, db)
+}
+
 func TestMangaListNoMangas(t *testing.T) {
 	w := testhelpers.CallGQL(r, `{"query":"{mangaList {id}}"}`)
 
