@@ -91,6 +91,26 @@ func TestManga(t *testing.T) {
 			query:  `{"query":"{manga(ID: 1) {endDate}}"}`,
 			expect: `{"data":{"manga":{"endDate":"2020-01-01T00:00:00Z"}}}`,
 		},
+		{
+			des: "resolves [] when no associated genres",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.GenreFactory(t, db, testhelpers.GenreStub{})
+			},
+			query:  `{"query":"{manga(ID: 1) {genres}}"}`,
+			expect: `{"data":{"manga":{"genres":[]}}}`,
+		},
+		{
+			des: "resolves genres sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				g1 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "b"})
+				g2 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "a"})
+				testhelpers.MangaToGenres(t, db, m, []testhelpers.GenreRow{g1, g2})
+			},
+			query:  `{"query":"{manga(ID: 1) {genres}}"}`,
+			expect: `{"data":{"manga":{"genres":["a","b"]}}}`,
+		},
 	}
 
 	for _, test := range tests {
@@ -188,6 +208,26 @@ func TestMangaList(t *testing.T) {
 			},
 			query:  `{"query":"{mangaList {endDate}}"}`,
 			expect: `{"data":{"mangaList":[{"endDate":"2020-01-01T00:00:00Z"}]}}`,
+		},
+		{
+			des: "resolves [] when no associated genres",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.GenreFactory(t, db, testhelpers.GenreStub{})
+			},
+			query:  `{"query":"{mangaList {genres}}"}`,
+			expect: `{"data":{"mangaList":[{"genres":[]}]}}`,
+		},
+		{
+			des: "resolves genres sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				g1 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "b"})
+				g2 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "a"})
+				testhelpers.MangaToGenres(t, db, m, []testhelpers.GenreRow{g1, g2})
+			},
+			query:  `{"query":"{mangaList {genres}}"}`,
+			expect: `{"data":{"mangaList":[{"genres":["a","b"]}]}}`,
 		},
 		{
 			des: "resolves mangaList sorted by name",
