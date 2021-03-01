@@ -50,6 +50,38 @@ func TestManga(t *testing.T) {
 	testhelpers.ClearDB(t, db)
 }
 
+func TestMangaGenresNoGenres(t *testing.T) {
+	testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	testhelpers.GenreFactory(t, db, testhelpers.GenreStub{})
+
+	w := testhelpers.CallGQL(r, `{"query":"{manga(ID: 1) {genres}}"}`)
+
+	expect := `{"data":{"manga":{"genres":[]}}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+
+	testhelpers.ClearDB(t, db)
+}
+
+func TestMangaGenres(t *testing.T) {
+	m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	g1 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "b"})
+	g2 := testhelpers.GenreFactory(t, db, testhelpers.GenreStub{Name: "a"})
+	testhelpers.MangaToGenres(t, db, m, []testhelpers.GenreRow{g1, g2})
+
+	w := testhelpers.CallGQL(r, `{"query":"{manga(ID: 1) {genres}}"}`)
+
+	expect := `{"data":{"manga":{"genres":["a","b"]}}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+
+	testhelpers.ClearDB(t, db)
+}
+
 func TestMangaListNoMangas(t *testing.T) {
 	w := testhelpers.CallGQL(r, `{"query":"{mangaList {id}}"}`)
 
