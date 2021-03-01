@@ -19,8 +19,8 @@ func (r *mangaResolver) Genres(ctx context.Context, manga *model.Manga) ([]strin
 	return r.MangaRepo.GetGenres(manga)
 }
 
-func (r *mangaResolver) ChapterCount(ctx context.Context, obj *model.Manga) (int, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mangaResolver) ChapterCount(ctx context.Context, manga *model.Manga) (int, error) {
+	return r.ChapterRepo.GetChapterCount(manga)
 }
 
 func (r *mangaResolver) ChapterList(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
