@@ -37,14 +37,24 @@ func (r *Chapter) GetOne(ctx context.Context, mangaID int, chapterNum float64) (
 	return &c, err
 }
 
-// GetAll returns all chapters, sorted by updatedAt.
-func (r *Chapter) GetAll(ctx context.Context) ([]*model.Chapter, error) {
+// GetAll returns all chapters of a manga, sorted by chapterNum, or all chapters, sorted by updatedAt, if no manga is given.
+func (r *Chapter) GetAll(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
 	var list []*model.Chapter
 
-	rows, err := r.db.Query(
-		ctx,
-		"SELECT * FROM chapter ORDER BY updated_at DESC, manga_id, chapter_num",
-	)
+	var rows pgx.Rows
+	var err error
+	if manga == nil {
+		rows, err = r.db.Query(
+			ctx,
+			"SELECT * FROM chapter ORDER BY updated_at DESC, manga_id, chapter_num",
+		)
+	} else {
+		rows, err = r.db.Query(
+			ctx,
+			"SELECT * FROM chapter WHERE manga_id = $1 ORDER BY chapter_num",
+			manga.ID,
+		)
+	}
 	if err != nil {
 		return nil, err
 	}
