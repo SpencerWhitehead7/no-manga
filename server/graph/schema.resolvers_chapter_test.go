@@ -100,3 +100,35 @@ func TestChapterManga(t *testing.T) {
 
 	testhelpers.ClearDB(t, db)
 }
+
+func TestChapterListNoChapters(t *testing.T) {
+	w := testhelpers.CallGQL(r, `{"query":"{chapterList {id}}"}`)
+
+	expect := `{"data":{"chapterList":[]}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+}
+
+func TestChapterList(t *testing.T) {
+	m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+	c1 := testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, Name: "tName", ChapterNum: 1})
+	c2 := testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+	c3 := testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+
+	w := testhelpers.CallGQL(r, `{"query":"{chapterList {id chapterNum name pageCount updatedAt}}"}`)
+
+	expect := `{"data":{"chapterList":[` +
+		`{"id":"1__1","chapterNum":1,"name":"tName","pageCount":1,"updatedAt":"` + c1.UpdatedAt.Format(time.RFC3339) + `"},` +
+		`{"id":"1__2","chapterNum":2,"name":null,"pageCount":1,"updatedAt":"` + c2.UpdatedAt.Format(time.RFC3339) + `"},` +
+		`{"id":"2__1","chapterNum":1,"name":null,"pageCount":1,"updatedAt":"` + c3.UpdatedAt.Format(time.RFC3339) + `"}` +
+		`]}}`
+	actual := w.Body.String()
+	if expect != actual {
+		t.Errorf("\nQueryResult\n  expect: %v\n  actual: %v", expect, actual)
+	}
+
+	testhelpers.ClearDB(t, db)
+}
