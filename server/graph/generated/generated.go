@@ -36,6 +36,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Chapter() ChapterResolver
 	Manga() MangaResolver
 	Query() QueryResolver
 }
@@ -106,6 +107,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type ChapterResolver interface {
+	Manga(ctx context.Context, obj *model.Chapter) (*model.Manga, error)
+}
 type MangaResolver interface {
 	Genres(ctx context.Context, obj *model.Manga) ([]string, error)
 	ChapterCount(ctx context.Context, obj *model.Manga) (int, error)
@@ -893,14 +897,14 @@ func (ec *executionContext) _Chapter_manga(ctx context.Context, field graphql.Co
 		Object:     "Chapter",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Manga, nil
+		return ec.resolvers.Chapter().Manga(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3405,30 +3409,39 @@ func (ec *executionContext) _Chapter(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Chapter_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "chapterNum":
 			out.Values[i] = ec._Chapter_chapterNum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Chapter_name(ctx, field, obj)
 		case "pageCount":
 			out.Values[i] = ec._Chapter_pageCount(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "updatedAt":
 			out.Values[i] = ec._Chapter_updatedAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "manga":
-			out.Values[i] = ec._Chapter_manga(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Chapter_manga(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4242,6 +4255,10 @@ func (ec *executionContext) marshalNMagazine2ᚖgithubᚗcomᚋSpencerWhitehead7
 		return graphql.Null
 	}
 	return ec._Magazine(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNManga2githubᚗcomᚋSpencerWhitehead7ᚋnoᚑmangaᚋserverᚋgraphᚋmodelᚐManga(ctx context.Context, sel ast.SelectionSet, v model.Manga) graphql.Marshaler {
+	return ec._Manga(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNManga2ᚕᚖgithubᚗcomᚋSpencerWhitehead7ᚋnoᚑmangaᚋserverᚋgraphᚋmodelᚐMangaᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Manga) graphql.Marshaler {
