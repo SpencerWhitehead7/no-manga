@@ -12,7 +12,7 @@ import (
 )
 
 func (r *chapterResolver) Manga(ctx context.Context, obj *model.Chapter) (*model.Manga, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.MangaRepo.GetOne(ctx, obj.MangaID)
 }
 
 func (r *mangaResolver) Genres(ctx context.Context, obj *model.Manga) ([]string, error) {
