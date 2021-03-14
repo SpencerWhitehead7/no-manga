@@ -2,19 +2,6 @@
 
 package model
 
-import (
-	"time"
-)
-
-type Chapter struct {
-	ID         string    `json:"id"`
-	ChapterNum float64   `json:"chapterNum"`
-	Name       *string   `json:"name"`
-	PageCount  int       `json:"pageCount"`
-	UpdatedAt  time.Time `json:"updatedAt"`
-	Manga      *Manga    `json:"manga"`
-}
-
 type Magazine struct {
 	ID          int      `json:"id"`
 	Name        string   `json:"name"`
