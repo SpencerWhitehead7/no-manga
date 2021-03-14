@@ -11,8 +11,8 @@ import (
 	"github.com/SpencerWhitehead7/no-manga/server/graph/model"
 )
 
-func (r *chapterResolver) Manga(ctx context.Context, obj *model.Chapter) (*model.Manga, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *chapterResolver) Manga(ctx context.Context, chapter *model.Chapter) (*model.Manga, error) {
+	return r.MangaRepo.GetOne(chapter.MangaID)
 }
 
 func (r *mangaResolver) Genres(ctx context.Context, manga *model.Manga) ([]string, error) {
