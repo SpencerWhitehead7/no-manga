@@ -38,6 +38,7 @@ type Config struct {
 type ResolverRoot interface {
 	Chapter() ChapterResolver
 	Manga() MangaResolver
+	Mangaka() MangakaResolver
 	Query() QueryResolver
 }
 
@@ -116,6 +117,9 @@ type MangaResolver interface {
 	ChapterList(ctx context.Context, obj *model.Manga) ([]*model.Chapter, error)
 	MangakaList(ctx context.Context, obj *model.Manga) ([]*model.SeriesMangaka, error)
 	MagazineList(ctx context.Context, obj *model.Manga) ([]*model.Magazine, error)
+}
+type MangakaResolver interface {
+	MangaList(ctx context.Context, obj *model.Mangaka) ([]*model.Manga, error)
 }
 type QueryResolver interface {
 	Manga(ctx context.Context, id int) (*model.Manga, error)
@@ -1699,14 +1703,14 @@ func (ec *executionContext) _Mangaka_mangaList(ctx context.Context, field graphq
 		Object:     "Mangaka",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MangaList, nil
+		return ec.resolvers.Mangaka().MangaList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3643,28 +3647,37 @@ func (ec *executionContext) _Mangaka(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Mangaka_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Mangaka_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "otherNames":
 			out.Values[i] = ec._Mangaka_otherNames(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 			out.Values[i] = ec._Mangaka_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "mangaList":
-			out.Values[i] = ec._Mangaka_mangaList(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Mangaka_mangaList(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
