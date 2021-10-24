@@ -13,4 +13,5 @@ import "github.com/SpencerWhitehead7/no-manga/server/graph/repository"
 type Resolver struct {
 	ChapterRepo *repository.Chapter
 	MangaRepo   *repository.Manga
+	MangakaRepo *repository.Mangaka
 }

@@ -20,6 +20,7 @@ func GQLHandler(db *pgxpool.Pool) gin.HandlerFunc {
 				Resolvers: &Resolver{
 					ChapterRepo: repository.ChapterFactory(db),
 					MangaRepo:   repository.MangaFactory(db),
+					MangakaRepo: repository.MangakaFactory(db),
 				},
 			},
 		),
