@@ -34,6 +34,36 @@ func (r *Mangaka) GetOne(ctx context.Context, ID int) (*model.Mangaka, error) {
 	return &m, err
 }
 
+// GetAll returns all mangaka, sorted alphabetically by name.
+func (r *Mangaka) GetAll(ctx context.Context) ([]*model.Mangaka, error) {
+	var list []*model.Mangaka
+
+	rows, err := r.db.Query(
+		ctx,
+		"SELECT * FROM mangaka ORDER BY name",
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var m model.Mangaka
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description)
+		if err != nil {
+			log.Println("Mangaka row scan failed:", err)
+		}
+
+		list = append(list, &m)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return list, nil
+}
+
 // MangaFactory creates new MangaRepositories.
 func MangakaFactory(db *pgxpool.Pool) *Mangaka {
 	return &Mangaka{db: db}
