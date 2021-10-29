@@ -18,9 +18,10 @@ func GQLHandler(db *pgxpool.Pool) gin.HandlerFunc {
 		generated.NewExecutableSchema(
 			generated.Config{
 				Resolvers: &Resolver{
-					ChapterRepo: repository.ChapterFactory(db),
-					MangaRepo:   repository.MangaFactory(db),
-					MangakaRepo: repository.MangakaFactory(db),
+					ChapterRepo:       repository.ChapterFactory(db),
+					MangaRepo:         repository.MangaFactory(db),
+					MangakaRepo:       repository.MangakaFactory(db),
+					SeriesMangakaRepo: repository.SeriesMangakaFactory(db),
 				},
 			},
 		),

@@ -11,7 +11,8 @@ import "github.com/SpencerWhitehead7/no-manga/server/graph/repository"
 
 // Resolver serves as dependency injection for no-manga's gqlResolvers.
 type Resolver struct {
-	ChapterRepo *repository.Chapter
-	MangaRepo   *repository.Manga
-	MangakaRepo *repository.Mangaka
+	ChapterRepo       *repository.Chapter
+	MangaRepo         *repository.Manga
+	MangakaRepo       *repository.Mangaka
+	SeriesMangakaRepo *repository.SeriesMangaka
 }

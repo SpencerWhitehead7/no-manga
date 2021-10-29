@@ -28,7 +28,7 @@ func (r *mangaResolver) ChapterList(ctx context.Context, obj *model.Manga) ([]*m
 }
 
 func (r *mangaResolver) MangakaList(ctx context.Context, obj *model.Manga) ([]*model.SeriesMangaka, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.SeriesMangakaRepo.GetAll(ctx, obj)
 }
 
 func (r *mangaResolver) MagazineList(ctx context.Context, obj *model.Manga) ([]*model.Magazine, error) {
