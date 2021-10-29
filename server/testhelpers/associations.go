@@ -37,3 +37,13 @@ func MangaToMangaka(t *testing.T, db *pgxpool.Pool, manga MangaRow, mangaka Mang
 		t.Errorf("Failed to create manga_mangaka_job row: %v", err)
 	}
 }
+
+func MangaToMagazine(t *testing.T, db *pgxpool.Pool, manga MangaRow, magazine MagazineRow) {
+	query := "INSERT INTO magazine_manga (manga_id, magazine_id) VALUES ($1, $2)"
+	values := []interface{}{manga.ID, magazine.ID}
+
+	_, err := db.Exec(context.Background(), query, values...)
+	if err != nil {
+		t.Errorf("Failed to create magazine_manga row: %v", err)
+	}
+}

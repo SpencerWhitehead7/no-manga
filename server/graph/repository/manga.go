@@ -74,6 +74,18 @@ func (r *Manga) GetAll(ctx context.Context, parent interface{}) ([]*model.Manga,
 			`,
 			t.ID,
 		)
+	case *model.Magazine:
+		rows, err = r.db.Query(
+			ctx,
+			`
+			SELECT m.*
+			FROM manga m
+			JOIN magazine_manga magm ON m.id = magm.manga_id
+			WHERE magm.magazine_id = $1
+			ORDER BY name 
+			`,
+			t.ID,
+		)
 	default:
 		return nil, fmt.Errorf("could not resolve all manga because parent was unrecognized type")
 	}
