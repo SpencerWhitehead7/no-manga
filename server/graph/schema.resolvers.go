@@ -15,6 +15,10 @@ func (r *chapterResolver) Manga(ctx context.Context, obj *model.Chapter) (*model
 	return r.MangaRepo.GetOne(ctx, obj.MangaID)
 }
 
+func (r *magazineResolver) MangaList(ctx context.Context, obj *model.Magazine) ([]*model.Manga, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 func (r *mangaResolver) Genres(ctx context.Context, obj *model.Manga) ([]string, error) {
 	return r.MangaRepo.GetGenres(ctx, obj)
 }
@@ -78,6 +82,9 @@ func (r *seriesMangakaResolver) MangaList(ctx context.Context, obj *model.Series
 // Chapter returns generated.ChapterResolver implementation.
 func (r *Resolver) Chapter() generated.ChapterResolver { return &chapterResolver{r} }
 
+// Magazine returns generated.MagazineResolver implementation.
+func (r *Resolver) Magazine() generated.MagazineResolver { return &magazineResolver{r} }
+
 // Manga returns generated.MangaResolver implementation.
 func (r *Resolver) Manga() generated.MangaResolver { return &mangaResolver{r} }
 
@@ -91,6 +98,7 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 func (r *Resolver) SeriesMangaka() generated.SeriesMangakaResolver { return &seriesMangakaResolver{r} }
 
 type chapterResolver struct{ *Resolver }
+type magazineResolver struct{ *Resolver }
 type mangaResolver struct{ *Resolver }
 type mangakaResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

@@ -37,6 +37,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Chapter() ChapterResolver
+	Magazine() MagazineResolver
 	Manga() MangaResolver
 	Mangaka() MangakaResolver
 	Query() QueryResolver
@@ -111,6 +112,9 @@ type ComplexityRoot struct {
 
 type ChapterResolver interface {
 	Manga(ctx context.Context, obj *model.Chapter) (*model.Manga, error)
+}
+type MagazineResolver interface {
+	MangaList(ctx context.Context, obj *model.Magazine) ([]*model.Manga, error)
 }
 type MangaResolver interface {
 	Genres(ctx context.Context, obj *model.Manga) ([]string, error)
@@ -1115,14 +1119,14 @@ func (ec *executionContext) _Magazine_mangaList(ctx context.Context, field graph
 		Object:     "Magazine",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.MangaList, nil
+		return ec.resolvers.Magazine().MangaList(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3475,33 +3479,42 @@ func (ec *executionContext) _Magazine(ctx context.Context, sel ast.SelectionSet,
 		case "id":
 			out.Values[i] = ec._Magazine_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Magazine_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "otherNames":
 			out.Values[i] = ec._Magazine_otherNames(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 			out.Values[i] = ec._Magazine_description(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "demo":
 			out.Values[i] = ec._Magazine_demo(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "mangaList":
-			out.Values[i] = ec._Magazine_mangaList(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Magazine_mangaList(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
