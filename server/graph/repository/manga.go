@@ -49,6 +49,20 @@ func (r *Manga) GetAll(ctx context.Context, parent interface{}) ([]*model.Manga,
 			"SELECT * FROM manga ORDER BY name",
 		)
 	case *model.Mangaka:
+		// they're identical but go can't access t.ID properly if you combine the cases
+		rows, err = r.db.Query(
+			ctx,
+			`
+			SELECT m.*
+			FROM manga m
+			JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
+			WHERE mmkaj.mangaka_id = $1
+			ORDER BY name
+			`,
+			t.ID,
+		)
+	case *model.SeriesMangaka:
+		// they're identical but go can't access t.ID properly if you combine the cases
 		rows, err = r.db.Query(
 			ctx,
 			`
