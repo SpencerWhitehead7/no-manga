@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/SpencerWhitehead7/no-manga/server/graph/model"
@@ -34,14 +35,34 @@ func (r *Manga) GetOne(ctx context.Context, ID int) (*model.Manga, error) {
 	return &m, err
 }
 
-// GetAll returns all manga, sorted alphabetically by name.
-func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {
+// GetAll returns all manga if given no parent, or all manga belonging to parent, sorted alphabetically by name.
+func (r *Manga) GetAll(ctx context.Context, parent interface{}) ([]*model.Manga, error) {
 	var list []*model.Manga
 
-	rows, err := r.db.Query(
-		ctx,
-		"SELECT * FROM manga ORDER BY name",
-	)
+	var rows pgx.Rows
+	var err error
+	// todo: generics :/
+	switch t := parent.(type) {
+	case nil:
+		rows, err = r.db.Query(
+			ctx,
+			"SELECT * FROM manga ORDER BY name",
+		)
+	case *model.Mangaka:
+		rows, err = r.db.Query(
+			ctx,
+			`
+			SELECT m.*
+			FROM manga m
+			JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
+			WHERE mmkaj.mangaka_id = $1
+			ORDER BY name
+			`,
+			t.ID,
+		)
+	default:
+		return nil, fmt.Errorf("could not resolve all manga because parent was unrecognized type")
+	}
 	if err != nil {
 		return nil, err
 	}
