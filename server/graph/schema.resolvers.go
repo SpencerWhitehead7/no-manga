@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/SpencerWhitehead7/no-manga/server/graph/generated"
 	"github.com/SpencerWhitehead7/no-manga/server/graph/model"
@@ -36,7 +35,7 @@ func (r *mangaResolver) MangakaList(ctx context.Context, obj *model.Manga) ([]*m
 }
 
 func (r *mangaResolver) MagazineList(ctx context.Context, obj *model.Manga) ([]*model.Magazine, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.MagazineRepo.GetAll(ctx, obj)
 }
 
 func (r *mangakaResolver) MangaList(ctx context.Context, obj *model.Mangaka) ([]*model.Manga, error) {
@@ -72,7 +71,7 @@ func (r *queryResolver) Magazine(ctx context.Context, id int) (*model.Magazine, 
 }
 
 func (r *queryResolver) MagazineList(ctx context.Context) ([]*model.Magazine, error) {
-	return r.MagazineRepo.GetAll(ctx)
+	return r.MagazineRepo.GetAll(ctx, nil)
 }
 
 func (r *seriesMangakaResolver) MangaList(ctx context.Context, obj *model.SeriesMangaka) ([]*model.Manga, error) {

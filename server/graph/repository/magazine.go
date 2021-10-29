@@ -34,14 +34,30 @@ func (r *Magazine) GetOne(ctx context.Context, ID int) (*model.Magazine, error) 
 	return &m, err
 }
 
-// GetAll returns all magazines, sorted alphabetically by name.
-func (r *Magazine) GetAll(ctx context.Context) ([]*model.Magazine, error) {
+// GetAll returns all magazines a manga ran in, or all magazines if no manga is given, sorted alphabetically by name.
+func (r *Magazine) GetAll(ctx context.Context, manga *model.Manga) ([]*model.Magazine, error) {
 	var list []*model.Magazine
 
-	rows, err := r.db.Query(
-		ctx,
-		"SELECT * FROM magazine ORDER BY name",
-	)
+	var rows pgx.Rows
+	var err error
+	if manga == nil {
+		rows, err = r.db.Query(
+			ctx,
+			"SELECT * FROM magazine ORDER BY name",
+		)
+	} else {
+		rows, err = r.db.Query(
+			ctx,
+			`
+			SELECT mag.*
+			FROM magazine mag
+			JOIN magazine_manga magm ON mag.id = magm.magazine_id
+			WHERE magm.manga_id = $1
+			ORDER BY name
+			`,
+			manga.ID,
+		)
+	}
 	if err != nil {
 		return nil, err
 	}
