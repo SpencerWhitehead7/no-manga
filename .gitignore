@@ -3,3 +3,6 @@ ___.txt
 
 # prod env vars
 .env.prod
+
+# js libs
+node_modules

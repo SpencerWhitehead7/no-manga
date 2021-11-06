@@ -1,0 +1,19 @@
+{
+  "name": "load-test",
+  "version": "0.1.0",
+  "description": "Tooling for load testing no-manga's GQL API",
+  "author": "Spencer Whitehead",
+  "license": "Unlicense",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SpencerWhitehead7/no-manga/loadTest"
+  },
+  "scripts": {
+    "loadtest": "artillery run loadTestConfig.yml"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.0-4",
+    "easygraphql-load-tester": "^2.0.5"
+  }
+}
