@@ -19,6 +19,29 @@ import (
 	"github.com/SpencerWhitehead7/no-manga/server/schema"
 )
 
+func getRouter(db *pgxpool.Pool) *gin.Engine {
+	r := gin.Default()
+
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	})
+	r.GET("/dbping", func(c *gin.Context) {
+		err := db.Ping(c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("database ping failed: %v", err)})
+		} else {
+			c.JSON(http.StatusOK, gin.H{"message": "dbpong"})
+		}
+	})
+
+	r.POST("/gql", gin.WrapH(&relay.Handler{
+		Schema: graphql.MustParseSchema(schema.Schema, resolver.NewQuery()),
+	}))
+	r.GET("/", playground.NewHandler("no-manga GQL Playground", "/gql"))
+
+	return r
+}
+
 func main() {
 	env := os.Getenv("ENV")
 
@@ -43,24 +66,5 @@ func main() {
 	}
 	defer db.Close()
 
-	r := gin.Default()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"message": "pong"})
-	})
-	r.GET("/dbping", func(c *gin.Context) {
-		err := db.Ping(c)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("database ping failed: %v", err)})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"message": "dbpong"})
-		}
-	})
-
-	r.POST("/gql", gin.WrapH(&relay.Handler{
-		Schema: graphql.MustParseSchema(schema.Schema, resolver.NewQuery()),
-	}))
-	r.GET("/", playground.NewHandler("no-manga GQL Playground", "/gql"))
-
-	r.Run() // listen and serve on 8080
+	getRouter(db).Run() // listen and serve on 8080
 }
