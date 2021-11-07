@@ -8,6 +8,7 @@ import (
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 
+	"github.com/SpencerWhitehead7/no-manga/server/playground"
 	"github.com/SpencerWhitehead7/no-manga/server/resolver"
 	"github.com/SpencerWhitehead7/no-manga/server/schema"
 )
@@ -22,6 +23,7 @@ func main() {
 	r.POST("/gql", gin.WrapH(&relay.Handler{
 		Schema: graphql.MustParseSchema(schema.Schema, resolver.NewQuery()),
 	}))
+	r.GET("/", playground.NewHandler("no-manga GQL Playground", "/gql"))
 
 	r.Run() // listen and serve on 8080
 }
