@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/graph-gophers/graphql-go"
 	"github.com/graph-gophers/graphql-go/relay"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 
 	"github.com/SpencerWhitehead7/no-manga/server/playground"
 	"github.com/SpencerWhitehead7/no-manga/server/resolver"
@@ -18,9 +20,20 @@ import (
 )
 
 func main() {
-	var err error
+	env := os.Getenv("ENV")
 
-	db, err := pgxpool.Connect(context.Background(), "postgresql://spencer:@localhost:5432/no-manga")
+	var err error
+	if env == "prod" {
+		gin.SetMode(gin.ReleaseMode)
+		err = godotenv.Load(".env.prod")
+	} else {
+		err = godotenv.Load(".env.dev")
+	}
+	if err != nil {
+		log.Fatalln("Unable to connect to database:", err)
+	}
+
+	db, err := pgxpool.Connect(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalln("unable to connect to database:", err)
 	}
