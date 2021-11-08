@@ -63,7 +63,7 @@ func (q *Query) Chapter(
 		return nil, nil
 	}
 
-	return &chapterResolver{chapter: c}, nil
+	return &chapterResolver{chapter: c, query: q}, nil
 }
 
 func (q *Query) ChapterList(
@@ -78,7 +78,7 @@ func (q *Query) chapterMListToRList(mList []*model.Chapter, err error) ([]*chapt
 
 	rlist := make([]*chapterResolver, len(mList))
 	for i, c := range mList {
-		rlist[i] = &chapterResolver{chapter: c}
+		rlist[i] = &chapterResolver{chapter: c, query: q}
 	}
 
 	return rlist, nil

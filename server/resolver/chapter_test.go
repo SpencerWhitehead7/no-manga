@@ -104,6 +104,17 @@ func TestChapter(t *testing.T) {
 				return `{"data":{"chapter":{"updatedAt":"` + testC.UpdatedAt.Format(time.RFC3339Nano) + `"}}}`
 			},
 		},
+		{
+			des: "resolves manga",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m})
+			},
+			query: `{"query":"{chapterList {id manga {id}}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"id":"1__1","manga":{"id":"1"}}]}}`
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -187,6 +198,17 @@ func TestChapterList(t *testing.T) {
 			query: `{"query":"{chapterList {updatedAt}}"}`,
 			expect: func() string {
 				return `{"data":{"chapterList":[{"updatedAt":"` + testC.UpdatedAt.Format(time.RFC3339Nano) + `"}]}}`
+			},
+		},
+		{
+			des: "resolves manga",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m})
+			},
+			query: `{"query":"{chapterList {id manga {id}}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"id":"1__1","manga":{"id":"1"}}]}}`
 			},
 		},
 		{

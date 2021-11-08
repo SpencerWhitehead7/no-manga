@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"context"
+
 	"github.com/graph-gophers/graphql-go"
 
 	"github.com/SpencerWhitehead7/no-manga/server/model"
@@ -8,6 +10,7 @@ import (
 
 type chapterResolver struct {
 	chapter *model.Chapter
+	query   *Query
 }
 
 func (r *chapterResolver) ID() graphql.ID {
@@ -25,6 +28,6 @@ func (r *chapterResolver) PageCount() int32 {
 func (r *chapterResolver) UpdatedAt() graphql.Time {
 	return graphql.Time{Time: r.chapter.UpdatedAt}
 }
-func (r *chapterResolver) Manga() *mangaResolver {
-	return &mangaResolver{}
+func (r *chapterResolver) Manga(ctx context.Context) (*mangaResolver, error) {
+	return r.query.Manga(ctx, struct{ ID int32 }{ID: r.chapter.MangaID})
 }
