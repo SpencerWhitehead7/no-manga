@@ -1,8 +1,15 @@
 package resolver
 
-import "context"
+import (
+	"context"
 
-type Query struct{}
+	"github.com/SpencerWhitehead7/no-manga/server/repository"
+	"github.com/jackc/pgx/v4/pgxpool"
+)
+
+type Query struct {
+	mangaRepository *repository.Manga
+}
 
 func (q *Query) Manga(
 	ctx context.Context,
@@ -10,7 +17,15 @@ func (q *Query) Manga(
 		ID int32
 	},
 ) (*mangaResolver, error) {
-	return &mangaResolver{}, nil
+	m, err := q.mangaRepository.GetOne(ctx, args.ID)
+	if err != nil {
+		return nil, err
+	}
+	if m == nil {
+		return nil, nil
+	}
+
+	return &mangaResolver{manga: m}, nil
 }
 
 func (q *Query) MangaList(
@@ -65,6 +80,8 @@ func (q *Query) MagazineList(
 	return make([]*magazineResolver, 0), nil
 }
 
-func NewQuery() *Query {
-	return &Query{}
+func NewQuery(db *pgxpool.Pool) *Query {
+	return &Query{
+		mangaRepository: repository.NewManga(db),
+	}
 }
