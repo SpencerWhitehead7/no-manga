@@ -41,8 +41,8 @@ func (r *mangaResolver) EndDate() *graphql.Time {
 func (r *mangaResolver) Genres(ctx context.Context) ([]string, error) {
 	return r.query.mangaRepository.GetGenres(ctx, r.manga)
 }
-func (r *mangaResolver) ChapterCount() int32 {
-	return r.manga.ChapterCount
+func (r *mangaResolver) ChapterCount(ctx context.Context) (int32, error) {
+	return r.query.chapterRepository.GetCount(ctx, r.manga)
 }
 func (r *mangaResolver) ChapterList(ctx context.Context) ([]*chapterResolver, error) {
 	return r.query.chapterMListToRList(r.query.chapterRepository.GetByManga(ctx, r.manga))

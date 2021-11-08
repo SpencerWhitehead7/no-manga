@@ -72,6 +72,22 @@ func (r *Chapter) getList(rows pgx.Rows, err error) ([]*model.Chapter, error) {
 	return list, nil
 }
 
+func (r *Chapter) GetCount(ctx context.Context, manga *model.Manga) (int32, error) {
+	var count int32
+
+	err := r.db.QueryRow(
+		ctx,
+		"SELECT count(*) FROM chapter WHERE manga_id = $1",
+		manga.ID,
+	).Scan(&count)
+	if err != nil {
+		log.Println("ChapterCount row scan failed:", err)
+		return count, err
+	}
+
+	return count, nil
+}
+
 func NewChapter(db *pgxpool.Pool) *Chapter {
 	return &Chapter{db: db}
 }
