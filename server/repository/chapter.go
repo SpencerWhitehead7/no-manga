@@ -39,6 +39,14 @@ func (r *Chapter) GetAll(ctx context.Context) ([]*model.Chapter, error) {
 	))
 }
 
+func (r *Chapter) GetByManga(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		"SELECT * FROM chapter WHERE manga_id = $1 ORDER BY chapter_num",
+		manga.ID,
+	))
+}
+
 func (r *Chapter) getList(rows pgx.Rows, err error) ([]*model.Chapter, error) {
 	if err != nil {
 		return nil, err

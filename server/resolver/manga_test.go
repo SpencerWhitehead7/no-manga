@@ -111,6 +111,29 @@ func TestManga(t *testing.T) {
 			query:  `{"query":"{manga(ID: 1) {genres}}"}`,
 			expect: `{"data":{"manga":{"genres":["a","b"]}}}`,
 		},
+		{
+			des: "resolves [] when no associated chapters",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+			},
+			query:  `{"query":"{manga(ID: 1) {chapterList {id}}}"}`,
+			expect: `{"data":{"manga":{"chapterList":[]}}}`,
+		},
+		{
+			des: "resolves chapters sorted by chapterNum",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+			},
+			query: `{"query":"{manga(ID: 1) {chapterList {id}}}"}`,
+			expect: `{"data":{"manga":{"chapterList":[` +
+				`{"id":"1__1"},` +
+				`{"id":"1__2"}` +
+				`]}}}`,
+		},
 	}
 
 	for _, test := range tests {
@@ -228,6 +251,29 @@ func TestMangaList(t *testing.T) {
 			},
 			query:  `{"query":"{mangaList {genres}}"}`,
 			expect: `{"data":{"mangaList":[{"genres":["a","b"]}]}}`,
+		},
+		{
+			des: "resolves [] when no associated chapters",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+			},
+			query:  `{"query":"{mangaList {chapterList {id}}}"}`,
+			expect: `{"data":{"mangaList":[{"chapterList":[]},{"chapterList":[{"id":"2__1"}]}]}}`,
+		},
+		{
+			des: "resolves chapters sorted by chapterNum",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+			},
+			query: `{"query":"{mangaList {chapterList {id}}}"}`,
+			expect: `{"data":{"mangaList":[{"chapterList":[` +
+				`{"id":"1__1"},` +
+				`{"id":"1__2"}` +
+				`]}]}}`,
 		},
 		{
 			des: "resolves mangaList sorted by name",

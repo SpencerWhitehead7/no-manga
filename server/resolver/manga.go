@@ -44,8 +44,8 @@ func (r *mangaResolver) Genres(ctx context.Context) ([]string, error) {
 func (r *mangaResolver) ChapterCount() int32 {
 	return r.manga.ChapterCount
 }
-func (r *mangaResolver) ChapterList() []*chapterResolver {
-	return make([]*chapterResolver, 0)
+func (r *mangaResolver) ChapterList(ctx context.Context) ([]*chapterResolver, error) {
+	return r.query.chapterMListToRList(r.query.chapterRepository.GetByManga(ctx, r.manga))
 }
 func (r *mangaResolver) MangakaList() []*seriesMangakaResolver {
 	return make([]*seriesMangakaResolver, 0)
