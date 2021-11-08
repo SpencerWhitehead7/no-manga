@@ -116,3 +116,108 @@ func TestChapter(t *testing.T) {
 		testhelpers.ClearDB(t, db)
 	}
 }
+
+func TestChapterList(t *testing.T) {
+	var testC testhelpers.ChapterRow
+
+	tests := []struct {
+		des    string
+		setup  func()
+		query  string
+		expect func() string
+	}{
+		{
+			des:   "returns [] when no chapters",
+			setup: func() {},
+			query: `{"query":"{chapterList {id}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[]}}`
+			},
+		},
+		{
+			des: "resolves id",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testC = testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m, ChapterNum: 2})
+			},
+			query: `{"query":"{chapterList {id}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"id":"1__2"}]}}`
+			},
+		},
+		{
+			des: "resolves null when no name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testC = testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m})
+			},
+			query: `{"query":"{chapterList {name}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"name":null}]}}`
+			},
+		},
+		{
+			des: "resolves name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testC = testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m, Name: "tName"})
+			},
+			query: `{"query":"{chapterList {name}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"name":"tName"}]}}`
+			},
+		},
+		{
+			des: "resolves pageCount",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testC = testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m})
+			},
+			query: `{"query":"{chapterList {pageCount}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"pageCount":1}]}}`
+			},
+		},
+		{
+			des: "resolves updatedAt",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testC = testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m})
+			},
+			query: `{"query":"{chapterList {updatedAt}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[{"updatedAt":"` + testC.UpdatedAt.Format(time.RFC3339Nano) + `"}]}}`
+			},
+		},
+		{
+			des: "resolves chapterList sorted by updatedAt",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 2})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 1})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m1, ChapterNum: 1})
+				testhelpers.ChapterFactory(t, db, testhelpers.ChapterStub{Manga: m2, ChapterNum: 2})
+			},
+			query: `{"query":"{chapterList {id}}"}`,
+			expect: func() string {
+				return `{"data":{"chapterList":[` +
+					`{"id":"2__2"},` +
+					`{"id":"1__1"},` +
+					`{"id":"2__1"},` +
+					`{"id":"1__2"}` +
+					`]}}`
+			},
+		},
+	}
+
+	for _, test := range tests {
+		test.setup()
+		w := testhelpers.CallGQL(r, test.query)
+		actual := w.Body.String()
+		if test.expect() != actual {
+			t.Errorf("\n%v\n  expect: %v\n  actual: %v", test.des, test.expect(), actual)
+		}
+		testhelpers.ClearDB(t, db)
+	}
+}

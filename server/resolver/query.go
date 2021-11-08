@@ -69,7 +69,19 @@ func (q *Query) Chapter(
 func (q *Query) ChapterList(
 	ctx context.Context,
 ) ([]*chapterResolver, error) {
-	return make([]*chapterResolver, 0), nil
+	return q.chapterMListToRList(q.chapterRepository.GetAll(ctx))
+}
+func (q *Query) chapterMListToRList(mList []*model.Chapter, err error) ([]*chapterResolver, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	rlist := make([]*chapterResolver, len(mList))
+	for i, c := range mList {
+		rlist[i] = &chapterResolver{chapter: c}
+	}
+
+	return rlist, nil
 }
 
 func (q *Query) Mangaka(
