@@ -26,7 +26,7 @@ func (q *Query) Manga(
 		return nil, nil
 	}
 
-	return &mangaResolver{manga: m}, nil
+	return &mangaResolver{manga: m, query: q}, nil
 }
 
 func (q *Query) MangaList(
@@ -41,7 +41,7 @@ func (q *Query) mangaMListToRList(mList []*model.Manga, err error) ([]*mangaReso
 
 	rList := make([]*mangaResolver, len(mList))
 	for i, m := range mList {
-		rList[i] = &mangaResolver{manga: m}
+		rList[i] = &mangaResolver{manga: m, query: q}
 	}
 
 	return rList, nil

@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/graph-gophers/graphql-go"
@@ -10,6 +11,7 @@ import (
 
 type mangaResolver struct {
 	manga *model.Manga
+	query *Query
 }
 
 func (r *mangaResolver) ID() graphql.ID {
@@ -36,8 +38,8 @@ func (r *mangaResolver) EndDate() *graphql.Time {
 	}
 	return nil
 }
-func (r *mangaResolver) Genres() []string {
-	return r.manga.Genres
+func (r *mangaResolver) Genres(ctx context.Context) ([]string, error) {
+	return r.query.mangaRepository.GetGenres(ctx, r.manga)
 }
 func (r *mangaResolver) ChapterCount() int32 {
 	return r.manga.ChapterCount
