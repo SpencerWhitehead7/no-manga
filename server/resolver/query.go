@@ -3,6 +3,7 @@ package resolver
 import (
 	"context"
 
+	"github.com/SpencerWhitehead7/no-manga/server/model"
 	"github.com/SpencerWhitehead7/no-manga/server/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -31,7 +32,19 @@ func (q *Query) Manga(
 func (q *Query) MangaList(
 	ctx context.Context,
 ) ([]*mangaResolver, error) {
-	return make([]*mangaResolver, 0), nil
+	return q.mangaMListToRList(q.mangaRepository.GetAll(ctx))
+}
+func (q *Query) mangaMListToRList(mList []*model.Manga, err error) ([]*mangaResolver, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	rList := make([]*mangaResolver, len(mList))
+	for i, m := range mList {
+		rList[i] = &mangaResolver{manga: m}
+	}
+
+	return rList, nil
 }
 
 func (q *Query) Chapter(

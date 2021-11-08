@@ -32,6 +32,38 @@ func (r *Manga) GetOne(ctx context.Context, ID int32) (*model.Manga, error) {
 	return &m, err
 }
 
+func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		"SELECT * FROM manga ORDER BY name",
+	))
+}
+
+func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*model.Manga
+
+	for rows.Next() {
+		var m model.Manga
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo, &m.StartDate, &m.EndDate)
+		if err != nil {
+			log.Println("Manga row scan failed:", err)
+		}
+
+		list = append(list, &m)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return list, nil
+}
+
 func NewManga(db *pgxpool.Pool) *Manga {
 	return &Manga{db: db}
 }
