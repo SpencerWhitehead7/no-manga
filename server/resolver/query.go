@@ -105,7 +105,17 @@ func (q *Query) Mangaka(
 func (q *Query) MangakaList(
 	ctx context.Context,
 ) ([]*mangakaResolver, error) {
-	return make([]*mangakaResolver, 0), nil
+	mList, err := q.mangakaRepository.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rList := make([]*mangakaResolver, len(mList))
+	for i, m := range mList {
+		rList[i] = &mangakaResolver{mangaka: m}
+	}
+
+	return rList, nil
 }
 
 func (q *Query) Magazine(
