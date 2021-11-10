@@ -10,6 +10,7 @@ import (
 
 type Query struct {
 	chapterRepository *repository.Chapter
+	mangakaRepository *repository.Mangaka
 	mangaRepository   *repository.Manga
 }
 
@@ -90,7 +91,15 @@ func (q *Query) Mangaka(
 		ID int32
 	},
 ) (*mangakaResolver, error) {
-	return &mangakaResolver{}, nil
+	m, err := q.mangakaRepository.GetOne(ctx, args.ID)
+	if err != nil {
+		return nil, err
+	}
+	if m == nil {
+		return nil, nil
+	}
+
+	return &mangakaResolver{mangaka: m}, nil
 }
 
 func (q *Query) MangakaList(
@@ -117,6 +126,7 @@ func (q *Query) MagazineList(
 func NewQuery(db *pgxpool.Pool) *Query {
 	return &Query{
 		chapterRepository: repository.NewChapter(db),
+		mangakaRepository: repository.NewMangaka(db),
 		mangaRepository:   repository.NewManga(db),
 	}
 }
