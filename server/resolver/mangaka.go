@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/graph-gophers/graphql-go"
@@ -10,6 +11,7 @@ import (
 
 type mangakaResolver struct {
 	mangaka *model.Mangaka
+	query   *Query
 }
 
 func (r *mangakaResolver) ID() graphql.ID {
@@ -24,6 +26,6 @@ func (r *mangakaResolver) OtherNames() []string {
 func (r *mangakaResolver) Description() string {
 	return r.mangaka.Description
 }
-func (r *mangakaResolver) MangaList() []*mangaResolver {
-	return make([]*mangaResolver, 0)
+func (r *mangakaResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
+	return r.query.mangaMListToRList(r.query.mangaRepository.GetByMangaka(ctx, r.mangaka))
 }

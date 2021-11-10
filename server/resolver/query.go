@@ -99,7 +99,7 @@ func (q *Query) Mangaka(
 		return nil, nil
 	}
 
-	return &mangakaResolver{mangaka: m}, nil
+	return &mangakaResolver{mangaka: m, query: q}, nil
 }
 
 func (q *Query) MangakaList(
@@ -112,7 +112,7 @@ func (q *Query) MangakaList(
 
 	rList := make([]*mangakaResolver, len(mList))
 	for i, m := range mList {
-		rList[i] = &mangakaResolver{mangaka: m}
+		rList[i] = &mangakaResolver{mangaka: m, query: q}
 	}
 
 	return rList, nil

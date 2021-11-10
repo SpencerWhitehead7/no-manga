@@ -39,6 +39,20 @@ func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {
 	))
 }
 
+func (r *Manga) GetByMangaka(ctx context.Context, mangaka *model.Mangaka) ([]*model.Manga, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		`
+		SELECT m.*
+		FROM manga m
+		JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
+		WHERE mmkaj.mangaka_id = $1
+		ORDER BY name
+		`,
+		mangaka.ID,
+	))
+}
+
 func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
 	if err != nil {
 		return nil, err
