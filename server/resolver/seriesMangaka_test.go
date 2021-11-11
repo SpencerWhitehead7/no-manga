@@ -75,6 +75,21 @@ func TestSeriesMangaka(t *testing.T) {
 			query:  `{"query":"{manga(ID: 1) {mangakaList {job}}}"}`,
 			expect: `{"data":{"manga":{"mangakaList":[{"job":"author_artist"}]}}}`,
 		},
+		{
+			des: "resolves mangaList sorted by name",
+			setup: func() {
+				m1 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{Name: "b"})
+				m2 := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{Name: "a"})
+				mka := testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{})
+				testhelpers.MangaToMangaka(t, db, m1, mka, "author_artist")
+				testhelpers.MangaToMangaka(t, db, m2, mka, "author_artist")
+			},
+			query: `{"query":"{manga(ID: 1) {mangakaList {mangaList {name}}}}"}`,
+			expect: `{"data":{"manga":{"mangakaList":[{"mangaList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}]}}}`,
+		},
 	}
 
 	for _, test := range tests {

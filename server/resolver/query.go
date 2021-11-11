@@ -126,7 +126,7 @@ func (q *Query) seriesMangakaList(ctx context.Context, manga *model.Manga) ([]*s
 
 	rList := make([]*seriesMangakaResolver, len(sList))
 	for i, s := range sList {
-		rList[i] = &seriesMangakaResolver{seriesMangaka: s}
+		rList[i] = &seriesMangakaResolver{seriesMangaka: s, query: q}
 	}
 
 	return rList, nil
