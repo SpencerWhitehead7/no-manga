@@ -153,7 +153,19 @@ func (q *Query) Magazine(
 func (q *Query) MagazineList(
 	ctx context.Context,
 ) ([]*magazineResolver, error) {
-	return make([]*magazineResolver, 0), nil
+	return q.magazineMListToRList(q.magazineRepository.GetAll(ctx))
+}
+func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*magazineResolver, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	rList := make([]*magazineResolver, len(mList))
+	for i, m := range mList {
+		rList[i] = &magazineResolver{magazine: m}
+	}
+
+	return rList, nil
 }
 
 func NewQuery(db *pgxpool.Pool) *Query {

@@ -32,6 +32,38 @@ func (r *Magazine) GetOne(ctx context.Context, ID int32) (*model.Magazine, error
 	return &m, err
 }
 
+func (r *Magazine) GetAll(ctx context.Context) ([]*model.Magazine, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		"SELECT * FROM magazine ORDER BY name",
+	))
+}
+
+func (r *Magazine) getList(rows pgx.Rows, err error) ([]*model.Magazine, error) {
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*model.Magazine
+
+	for rows.Next() {
+		var m model.Magazine
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo)
+		if err != nil {
+			log.Println("Magazine row scan failed:", err)
+		}
+
+		list = append(list, &m)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return list, nil
+}
+
 func NewMagazine(db *pgxpool.Pool) *Magazine {
 	return &Magazine{db: db}
 }

@@ -79,3 +79,89 @@ func TestMagazine(t *testing.T) {
 		testhelpers.ClearDB(t, db)
 	}
 }
+
+func TestMagazineList(t *testing.T) {
+	tests := []struct {
+		des    string
+		setup  func()
+		query  string
+		expect string
+	}{
+		{
+			des:    "resolves [] when no magazines",
+			setup:  func() {},
+			query:  `{"query":"{magazineList {id}}"}`,
+			expect: `{"data":{"magazineList":[]}}`,
+		},
+		{
+			des: "resolves id",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{magazineList {id}}"}`,
+			expect: `{"data":{"magazineList":[{"id":"1"}]}}`,
+		},
+		{
+			des: "resolves name",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{magazineList {name}}"}`,
+			expect: `{"data":{"magazineList":[{"name":"tName"}]}}`,
+		},
+		{
+			des: "resolves [] when no otherNames",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{magazineList {otherNames}}"}`,
+			expect: `{"data":{"magazineList":[{"otherNames":[]}]}}`,
+		},
+		{
+			des: "resolves otherNames",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{OtherNames: []string{"alpha"}})
+			},
+			query:  `{"query":"{magazineList {otherNames}}"}`,
+			expect: `{"data":{"magazineList":[{"otherNames":["alpha"]}]}}`,
+		},
+		{
+			des: "resolves description",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{magazineList {description}}"}`,
+			expect: `{"data":{"magazineList":[{"description":"tDescription"}]}}`,
+		},
+		{
+			des: "resolves demo",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{magazineList {demo}}"}`,
+			expect: `{"data":{"magazineList":[{"demo":"shonen"}]}}`,
+		},
+		{
+			des: "resolves magazineList sorted by name",
+			setup: func() {
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "b"})
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "a"})
+			},
+			query: `{"query":"{magazineList {name}}"}`,
+			expect: `{"data":{"magazineList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}}`,
+		},
+	}
+
+	for _, test := range tests {
+		test.setup()
+		w := testhelpers.CallGQL(r, test.query)
+		actual := w.Body.String()
+		if test.expect != actual {
+			t.Errorf("\n%v\n  expect: %v\n  actual: %v", test.des, test.expect, actual)
+		}
+		testhelpers.ClearDB(t, db)
+	}
+}
