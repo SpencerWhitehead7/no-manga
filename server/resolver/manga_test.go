@@ -154,6 +154,30 @@ func TestManga(t *testing.T) {
 			query:  `{"query":"{manga(ID: 1) {chapterCount}}"}`,
 			expect: `{"data":{"manga":{"chapterCount":2}}}`,
 		},
+		{
+			des: "resolves [] when no associated mangaka",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{})
+			},
+			query:  `{"query":"{manga(ID: 1) {mangakaList {id}}}"}`,
+			expect: `{"data":{"manga":{"mangakaList":[]}}}`,
+		},
+		{
+			des: "resolves mangaka sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				mka1 := testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{Name: "b"})
+				mka2 := testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{Name: "a"})
+				testhelpers.MangaToMangaka(t, db, m, mka1, "author")
+				testhelpers.MangaToMangaka(t, db, m, mka2, "artist")
+			},
+			query: `{"query":"{manga(ID: 1) {mangakaList {name}}}"}`,
+			expect: `{"data":{"manga":{"mangakaList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}}}`,
+		},
 	}
 
 	for _, test := range tests {
@@ -314,6 +338,30 @@ func TestMangaList(t *testing.T) {
 			},
 			query:  `{"query":"{mangaList {chapterCount}}"}`,
 			expect: `{"data":{"mangaList":[{"chapterCount":2}]}}`,
+		},
+		{
+			des: "resolves [] when no associated mangaka",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{})
+			},
+			query:  `{"query":"{mangaList {mangakaList {id}}}"}`,
+			expect: `{"data":{"mangaList":[{"mangakaList":[]}]}}`,
+		},
+		{
+			des: "resolves mangaka sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				mka1 := testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{Name: "b"})
+				mka2 := testhelpers.MangakaFactory(t, db, testhelpers.MangakaStub{Name: "a"})
+				testhelpers.MangaToMangaka(t, db, m, mka1, "author")
+				testhelpers.MangaToMangaka(t, db, m, mka2, "artist")
+			},
+			query: `{"query":"{mangaList {mangakaList {name}}}"}`,
+			expect: `{"data":{"mangaList":[{"mangakaList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}]}}`,
 		},
 		{
 			des: "resolves mangaList sorted by name",

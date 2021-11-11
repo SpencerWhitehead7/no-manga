@@ -118,6 +118,20 @@ func (q *Query) MangakaList(
 	return rList, nil
 }
 
+func (q *Query) seriesMangakaList(ctx context.Context, manga *model.Manga) ([]*seriesMangakaResolver, error) {
+	sList, err := q.mangakaRepository.GetByManga(ctx, manga)
+	if err != nil {
+		return nil, err
+	}
+
+	rList := make([]*seriesMangakaResolver, len(sList))
+	for i, s := range sList {
+		rList[i] = &seriesMangakaResolver{seriesMangaka: s}
+	}
+
+	return rList, nil
+}
+
 func (q *Query) Magazine(
 	ctx context.Context,
 	args struct {
