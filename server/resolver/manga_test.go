@@ -178,6 +178,30 @@ func TestManga(t *testing.T) {
 				`{"name":"b"}` +
 				`]}}}`,
 		},
+		{
+			des: "resolves [] when no associated magazines",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{manga(ID: 1) {magazineList {id}}}"}`,
+			expect: `{"data":{"manga":{"magazineList":[]}}}`,
+		},
+		{
+			des: "resolves magazines sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				mag1 := testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "b"})
+				mag2 := testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "a"})
+				testhelpers.MangaToMagazine(t, db, m, mag1)
+				testhelpers.MangaToMagazine(t, db, m, mag2)
+			},
+			query: `{"query":"{manga(ID: 1) {magazineList {name}}}"}`,
+			expect: `{"data":{"manga":{"magazineList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}}}`,
+		},
 	}
 
 	for _, test := range tests {
@@ -359,6 +383,30 @@ func TestMangaList(t *testing.T) {
 			},
 			query: `{"query":"{mangaList {mangakaList {name}}}"}`,
 			expect: `{"data":{"mangaList":[{"mangakaList":[` +
+				`{"name":"a"},` +
+				`{"name":"b"}` +
+				`]}]}}`,
+		},
+		{
+			des: "resolves [] when no associated magazines",
+			setup: func() {
+				testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{})
+			},
+			query:  `{"query":"{mangaList {magazineList {id}}}"}`,
+			expect: `{"data":{"mangaList":[{"magazineList":[]}]}}`,
+		},
+		{
+			des: "resolves magazines sorted by name",
+			setup: func() {
+				m := testhelpers.MangaFactory(t, db, testhelpers.MangaStub{})
+				mag1 := testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "b"})
+				mag2 := testhelpers.MagazineFactory(t, db, testhelpers.MagazineStub{Name: "a"})
+				testhelpers.MangaToMagazine(t, db, m, mag1)
+				testhelpers.MangaToMagazine(t, db, m, mag2)
+			},
+			query: `{"query":"{mangaList {magazineList {name}}}"}`,
+			expect: `{"data":{"mangaList":[{"magazineList":[` +
 				`{"name":"a"},` +
 				`{"name":"b"}` +
 				`]}]}}`,

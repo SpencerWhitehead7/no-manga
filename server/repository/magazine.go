@@ -39,6 +39,20 @@ func (r *Magazine) GetAll(ctx context.Context) ([]*model.Magazine, error) {
 	))
 }
 
+func (r *Magazine) GetByManga(ctx context.Context, manga *model.Manga) ([]*model.Magazine, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		`
+		SELECT mag.*
+		FROM magazine mag
+		JOIN magazine_manga magm ON mag.id = magm.magazine_id
+		WHERE magm.manga_id = $1
+		ORDER BY name
+		`,
+		manga.ID,
+	))
+}
+
 func (r *Magazine) getList(rows pgx.Rows, err error) ([]*model.Magazine, error) {
 	if err != nil {
 		return nil, err

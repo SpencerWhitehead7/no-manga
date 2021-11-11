@@ -50,6 +50,6 @@ func (r *mangaResolver) ChapterList(ctx context.Context) ([]*chapterResolver, er
 func (r *mangaResolver) MangakaList(ctx context.Context) ([]*seriesMangakaResolver, error) {
 	return r.query.seriesMangakaList(ctx, r.manga)
 }
-func (r *mangaResolver) MagazineList() []*magazineResolver {
-	return make([]*magazineResolver, 0)
+func (r *mangaResolver) MagazineList(ctx context.Context) ([]*magazineResolver, error) {
+	return r.query.magazineMListToRList(r.query.magazineRepository.GetByManga(ctx, r.manga))
 }
