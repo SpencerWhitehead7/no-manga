@@ -147,7 +147,7 @@ func (q *Query) Magazine(
 		return nil, nil
 	}
 
-	return &magazineResolver{magazine: m}, nil
+	return &magazineResolver{magazine: m, query: q}, nil
 }
 
 func (q *Query) MagazineList(
@@ -162,7 +162,7 @@ func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*mag
 
 	rList := make([]*magazineResolver, len(mList))
 	for i, m := range mList {
-		rList[i] = &magazineResolver{magazine: m}
+		rList[i] = &magazineResolver{magazine: m, query: q}
 	}
 
 	return rList, nil

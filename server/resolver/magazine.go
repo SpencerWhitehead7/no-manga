@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/graph-gophers/graphql-go"
@@ -10,6 +11,7 @@ import (
 
 type magazineResolver struct {
 	magazine *model.Magazine
+	query    *Query
 }
 
 func (r *magazineResolver) ID() graphql.ID {
@@ -27,6 +29,6 @@ func (r *magazineResolver) Description() string {
 func (r *magazineResolver) Demo() string {
 	return r.magazine.Demo
 }
-func (r *magazineResolver) MangaList() []*mangaResolver {
-	return make([]*mangaResolver, 0)
+func (r *magazineResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
+	return r.query.mangaMListToRList(r.query.mangaRepository.GetByMagazine(ctx, r.magazine))
 }

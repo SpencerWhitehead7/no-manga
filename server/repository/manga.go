@@ -67,6 +67,20 @@ func (r *Manga) GetBySeriesMangaka(ctx context.Context, seriesMangaka *model.Ser
 	))
 }
 
+func (r *Manga) GetByMagazine(ctx context.Context, magazine *model.Magazine) ([]*model.Manga, error) {
+	return r.getList(r.db.Query(
+		ctx,
+		`
+		SELECT m.*
+		FROM manga m
+		JOIN magazine_manga magm ON m.id = magm.manga_id
+		WHERE magm.magazine_id = $1
+		ORDER BY name 
+		`,
+		magazine.ID,
+	))
+}
+
 func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
 	if err != nil {
 		return nil, err
