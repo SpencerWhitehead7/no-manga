@@ -12,24 +12,34 @@ import (
 
 type Manga struct{ db *pgxpool.Pool }
 
-func (r *Manga) GetOne(ctx context.Context, ID int32) (*model.Manga, error) {
-	var m model.Manga
-
-	err := r.db.QueryRow(
+func (r *Manga) GetByIDs(ctx context.Context, ids []int32) (map[int32]*model.Manga, error) {
+	rows, err := r.db.Query(
 		ctx,
-		"SELECT * FROM manga WHERE id = $1",
-		ID,
-	).Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo, &m.StartDate, &m.EndDate)
+		"SELECT * FROM manga WHERE id = ANY($1)",
+		ids,
+	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-
-		log.Println("manga row scan failed:", err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &m, err
+	idToManga := make(map[int32]*model.Manga, len(ids))
+
+	for rows.Next() {
+		var m model.Manga
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo, &m.StartDate, &m.EndDate)
+		if err != nil {
+			log.Println("Manga row scan failed:", err)
+		}
+
+		idToManga[m.ID] = &m
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToManga, nil
 }
 
 func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {

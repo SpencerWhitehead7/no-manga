@@ -35,7 +35,7 @@ func getRouter(db *pgxpool.Pool) *gin.Engine {
 	})
 
 	r.POST("/gql", gin.WrapH(&relay.Handler{
-		Schema: graphql.MustParseSchema(schema.Schema, resolver.NewQuery(db)),
+		Schema: graphql.MustParseSchema(schema.Schema, resolver.NewQuery(db, true)),
 	}))
 	r.GET("/", playground.NewHandler("no-manga GQL Playground", "/gql"))
 

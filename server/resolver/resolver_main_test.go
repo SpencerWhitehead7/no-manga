@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 	r = gin.Default()
 	r.POST("/", gin.WrapH(&relay.Handler{
-		Schema: graphql.MustParseSchema(schema.Schema, NewQuery(db)),
+		Schema: graphql.MustParseSchema(schema.Schema, NewQuery(db, false)),
 	}))
 
 	os.Exit(m.Run())

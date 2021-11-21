@@ -3,12 +3,19 @@ package resolver
 import (
 	"context"
 
+	"github.com/SpencerWhitehead7/no-manga/server/loader"
 	"github.com/SpencerWhitehead7/no-manga/server/model"
 	"github.com/SpencerWhitehead7/no-manga/server/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Query struct {
+	// ordinarily loaders are created and scoped per request because if
+	// different users should get different things for the same request
+	// caching / batching / permissioning will leak between requests
+	// but this API is completely stateless and user independent,
+	// so I'm using a singleton
+	loader             *loader.Loader
 	chapterRepository  *repository.Chapter
 	magazineRepository *repository.Magazine
 	mangakaRepository  *repository.Mangaka
@@ -21,7 +28,7 @@ func (q *Query) Manga(
 		ID int32
 	},
 ) (*mangaResolver, error) {
-	m, err := q.mangaRepository.GetOne(ctx, args.ID)
+	m, err := q.loader.Manga(ctx, args.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -168,8 +175,9 @@ func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*mag
 	return rList, nil
 }
 
-func NewQuery(db *pgxpool.Pool) *Query {
+func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
 	return &Query{
+		loader:             loader.NewLoader(db, shouldDataLoaderCache),
 		chapterRepository:  repository.NewChapter(db),
 		magazineRepository: repository.NewMagazine(db),
 		mangakaRepository:  repository.NewMangaka(db),
