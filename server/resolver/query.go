@@ -42,7 +42,7 @@ func (q *Query) Manga(
 func (q *Query) MangaList(
 	ctx context.Context,
 ) ([]*mangaResolver, error) {
-	return q.mangaMListToRList(q.mangaRepository.GetAll(ctx))
+	return q.mangaMListToRList(q.loader.MangaList(ctx))
 }
 func (q *Query) mangaMListToRList(mList []*model.Manga, err error) ([]*mangaResolver, error) {
 	if err != nil {

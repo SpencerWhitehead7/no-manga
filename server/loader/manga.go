@@ -27,6 +27,12 @@ func (l *mangaBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataloader
 	return loadBatchSuccess
 }
 
+func (l *mangaBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	mList, err := l.mangaRepository.GetAll(ctx)
+
+	return handleSingleBatch(keys, mList, err)
+}
+
 func newMangaBFs(db *pgxpool.Pool) *mangaBFs {
 	return &mangaBFs{mangaRepository: repository.NewManga(db)}
 }

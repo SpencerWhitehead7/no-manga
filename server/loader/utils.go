@@ -35,3 +35,11 @@ func loadBatchError(keys dataloader.Keys, err error) []*dataloader.Result {
 }
 
 // func loadBatchSuccess() TODO generics :/
+
+func handleSingleBatch(keys dataloader.Keys, list interface{}, err error) []*dataloader.Result {
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	return []*dataloader.Result{{Data: list}}
+}
