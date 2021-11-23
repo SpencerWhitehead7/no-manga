@@ -5,7 +5,6 @@ import (
 
 	"github.com/SpencerWhitehead7/no-manga/server/loader"
 	"github.com/SpencerWhitehead7/no-manga/server/model"
-	"github.com/SpencerWhitehead7/no-manga/server/repository"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -15,8 +14,7 @@ type Query struct {
 	// caching / batching / permissioning will leak between requests
 	// but this API is completely stateless and user independent,
 	// so I'm using a singleton
-	loader             *loader.Loader
-	magazineRepository *repository.Magazine
+	loader *loader.Loader
 }
 
 func (q *Query) Manga(
@@ -173,8 +171,5 @@ func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*mag
 }
 
 func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
-	return &Query{
-		loader:             loader.NewLoader(db, shouldDataLoaderCache),
-		magazineRepository: repository.NewMagazine(db),
-	}
+	return &Query{loader: loader.NewLoader(db, shouldDataLoaderCache)}
 }

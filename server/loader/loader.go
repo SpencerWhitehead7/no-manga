@@ -17,6 +17,7 @@ type Loader struct {
 	genres              *dataloader.Loader
 	magazine            *dataloader.Loader
 	magazineList        *dataloader.Loader
+	magazineListByManga *dataloader.Loader
 	manga               *dataloader.Loader
 	mangaList           *dataloader.Loader
 	mangaListByMagazine *dataloader.Loader
@@ -82,6 +83,15 @@ func (l *Loader) Magazine(ctx context.Context, id int32) (*model.Magazine, error
 
 func (l *Loader) MagazineList(ctx context.Context) ([]*model.Magazine, error) {
 	v, err := l.magazineList.Load(ctx, dataloader.StringKey("magazineList"))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.([]*model.Magazine), nil
+}
+
+func (l *Loader) MagazineListByManga(ctx context.Context, manga *model.Manga) ([]*model.Magazine, error) {
+	v, err := l.magazineListByManga.Load(ctx, int32Key(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -182,6 +192,7 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 		genres:              dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),
 		magazine:            dataloader.NewBatchedLoader(magazineBFs.byID, dataloader.WithCache(cache)),
 		magazineList:        dataloader.NewBatchedLoader(magazineBFs.list, dataloader.WithCache(cache)),
+		magazineListByManga: dataloader.NewBatchedLoader(magazineBFs.listByManga, dataloader.WithCache(cache)),
 		manga:               dataloader.NewBatchedLoader(mangaBFs.byID, dataloader.WithCache(cache)),
 		mangaList:           dataloader.NewBatchedLoader(mangaBFs.list, dataloader.WithCache(cache)),
 		mangaListByMagazine: dataloader.NewBatchedLoader(mangaBFs.listByMagazine, dataloader.WithCache(cache)),

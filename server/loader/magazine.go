@@ -33,6 +33,22 @@ func (l *magazineBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloa
 	return handleSingleBatch(keys, mList, err)
 }
 
+func (l *magazineBFs) listByManga(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	ids := int32KeysToIDs(keys)
+
+	idToMagazines, err := l.magazineRepository.GetByMangas(ctx, ids)
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	loadBatchSuccess := make([]*dataloader.Result, len(ids))
+	for i, id := range ids {
+		loadBatchSuccess[i] = &dataloader.Result{Data: idToMagazines[id]}
+	}
+
+	return loadBatchSuccess
+}
+
 func newMagazineBFs(db *pgxpool.Pool) *magazineBFs {
 	return &magazineBFs{magazineRepository: repository.NewMagazine(db)}
 }
