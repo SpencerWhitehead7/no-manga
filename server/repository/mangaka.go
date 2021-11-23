@@ -70,40 +70,41 @@ func (r *Mangaka) GetAll(ctx context.Context) ([]*model.Mangaka, error) {
 	return list, nil
 }
 
-func (r *Mangaka) GetByManga(ctx context.Context, manga *model.Manga) ([]*model.SeriesMangaka, error) {
-	var list []*model.SeriesMangaka
-
+func (r *Mangaka) GetByMangas(ctx context.Context, ids []int32) (map[int32][]*model.SeriesMangaka, error) {
 	rows, err := r.db.Query(
 		ctx,
 		`
-		SELECT mka.*, mmkaj.job
+		SELECT mka.*, mmkaj.job, mmkaj.manga_id
 		FROM mangaka mka
 		JOIN manga_mangaka_job mmkaj ON mka.id = mmkaj.mangaka_id
-		WHERE mmkaj.manga_id = $1
+		WHERE mmkaj.manga_id = ANY($1)
 		ORDER BY name
 		`,
-		manga.ID,
+		ids,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	idToSeriesMangakas := make(map[int32][]*model.SeriesMangaka)
+
 	for rows.Next() {
+		var id int32
 		var m model.SeriesMangaka
 
-		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Job)
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Job, &id)
 		if err != nil {
 			log.Println("SeriesMangaka row scan failed:", err)
 		}
 
-		list = append(list, &m)
+		idToSeriesMangakas[id] = append(idToSeriesMangakas[id], &m)
 	}
 	if rows.Err() != nil {
 		return nil, rows.Err()
 	}
 
-	return list, nil
+	return idToSeriesMangakas, nil
 }
 
 func NewMangaka(db *pgxpool.Pool) *Mangaka {

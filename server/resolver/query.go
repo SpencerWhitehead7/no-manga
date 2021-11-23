@@ -17,7 +17,6 @@ type Query struct {
 	// so I'm using a singleton
 	loader             *loader.Loader
 	magazineRepository *repository.Magazine
-	mangakaRepository  *repository.Mangaka
 	mangaRepository    *repository.Manga
 }
 
@@ -126,7 +125,7 @@ func (q *Query) MangakaList(
 }
 
 func (q *Query) seriesMangakaList(ctx context.Context, manga *model.Manga) ([]*seriesMangakaResolver, error) {
-	sList, err := q.mangakaRepository.GetByManga(ctx, manga)
+	sList, err := q.loader.SeriesMangakaList(ctx, manga)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +177,6 @@ func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
 	return &Query{
 		loader:             loader.NewLoader(db, shouldDataLoaderCache),
 		magazineRepository: repository.NewMagazine(db),
-		mangakaRepository:  repository.NewMangaka(db),
 		mangaRepository:    repository.NewManga(db),
 	}
 }

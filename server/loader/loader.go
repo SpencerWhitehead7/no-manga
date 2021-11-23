@@ -20,6 +20,7 @@ type Loader struct {
 	mangaListByMangaka *dataloader.Loader
 	mangaka            *dataloader.Loader
 	mangakaList        *dataloader.Loader
+	seriesMangakaList  *dataloader.Loader
 }
 
 func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model.Chapter, error) {
@@ -112,6 +113,15 @@ func (l *Loader) MangakaList(ctx context.Context) ([]*model.Mangaka, error) {
 	return v.([]*model.Mangaka), nil
 }
 
+func (l *Loader) SeriesMangakaList(ctx context.Context, manga *model.Manga) ([]*model.SeriesMangaka, error) {
+	v, err := l.seriesMangakaList.Load(ctx, int32Key(manga.ID))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.([]*model.SeriesMangaka), nil
+}
+
 // func (l *Loader) checkResult TODO: generics :/
 
 func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
@@ -135,5 +145,6 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 		mangaListByMangaka: dataloader.NewBatchedLoader(mangaBFs.listByMangaka, dataloader.WithCache(cache)),
 		mangaka:            dataloader.NewBatchedLoader(mangakaBFs.byID, dataloader.WithCache(cache)),
 		mangakaList:        dataloader.NewBatchedLoader(mangakaBFs.list, dataloader.WithCache(cache)),
+		seriesMangakaList:  dataloader.NewBatchedLoader(mangakaBFs.listByManga, dataloader.WithCache(cache)),
 	}
 }
