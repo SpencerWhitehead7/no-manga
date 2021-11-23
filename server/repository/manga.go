@@ -63,20 +63,6 @@ func (r *Manga) GetByMangakas(ctx context.Context, ids []int32) (map[int32][]*mo
 	))
 }
 
-func (r *Manga) GetBySeriesMangaka(ctx context.Context, seriesMangaka *model.SeriesMangaka) ([]*model.Manga, error) {
-	return r.getList(r.db.Query(
-		ctx,
-		`
-		SELECT m.*
-		FROM manga m
-		JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
-		WHERE mmkaj.mangaka_id = $1
-		ORDER BY name
-		`,
-		seriesMangaka.ID,
-	))
-}
-
 func (r *Manga) GetByMagazine(ctx context.Context, magazine *model.Magazine) ([]*model.Manga, error) {
 	return r.getList(r.db.Query(
 		ctx,

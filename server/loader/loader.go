@@ -95,6 +95,15 @@ func (l *Loader) MangaListByMangaka(ctx context.Context, mangaka *model.Mangaka)
 	return v.([]*model.Manga), nil
 }
 
+func (l *Loader) MangaListBySeriesMangaka(ctx context.Context, seriesMangaka *model.SeriesMangaka) ([]*model.Manga, error) {
+	v, err := l.mangaListByMangaka.Load(ctx, int32Key(seriesMangaka.ID))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.([]*model.Manga), nil
+}
+
 func (l *Loader) Mangaka(ctx context.Context, id int32) (*model.Mangaka, error) {
 	v, err := l.mangaka.Load(ctx, int32Key(id))()
 	if v == nil || err != nil {

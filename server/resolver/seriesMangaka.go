@@ -30,5 +30,5 @@ func (r *seriesMangakaResolver) Job() string {
 	return r.seriesMangaka.Job
 }
 func (r *seriesMangakaResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
-	return r.query.mangaMListToRList(r.query.mangaRepository.GetBySeriesMangaka(ctx, r.seriesMangaka))
+	return r.query.mangaMListToRList(r.query.loader.MangaListBySeriesMangaka(ctx, r.seriesMangaka))
 }
