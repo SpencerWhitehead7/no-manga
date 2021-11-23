@@ -158,7 +158,7 @@ func (q *Query) Magazine(
 func (q *Query) MagazineList(
 	ctx context.Context,
 ) ([]*magazineResolver, error) {
-	return q.magazineMListToRList(q.magazineRepository.GetAll(ctx))
+	return q.magazineMListToRList(q.loader.MagazineList(ctx))
 }
 func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*magazineResolver, error) {
 	if err != nil {

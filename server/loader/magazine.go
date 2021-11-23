@@ -27,6 +27,12 @@ func (l *magazineBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataloa
 	return loadBatchSuccess
 }
 
+func (l *magazineBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	mList, err := l.magazineRepository.GetAll(ctx)
+
+	return handleSingleBatch(keys, mList, err)
+}
+
 func newMagazineBFs(db *pgxpool.Pool) *magazineBFs {
 	return &magazineBFs{magazineRepository: repository.NewMagazine(db)}
 }
