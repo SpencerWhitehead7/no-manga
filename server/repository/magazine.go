@@ -12,24 +12,33 @@ import (
 
 type Magazine struct{ db *pgxpool.Pool }
 
-func (r *Magazine) GetOne(ctx context.Context, ID int32) (*model.Magazine, error) {
-	var m model.Magazine
-
-	err := r.db.QueryRow(
+func (r *Magazine) GetByIDs(ctx context.Context, ids []int32) (map[int32]*model.Magazine, error) {
+	rows, err := r.db.Query(
 		ctx,
-		"SELECT * FROM magazine WHERE id = $1",
-		ID,
-	).Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo)
+		"SELECT * FROM magazine WHERE id = ANY($1)",
+		ids,
+	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-
-		log.Println("Magazine row scan failed:", err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &m, err
+	idToMagazine := make(map[int32]*model.Magazine, len(ids))
+
+	for rows.Next() {
+		var m model.Magazine
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo)
+		if err != nil {
+			log.Println("Magazine row scan failed:", err)
+		}
+		idToMagazine[m.ID] = &m
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToMagazine, err
 }
 
 func (r *Magazine) GetAll(ctx context.Context) ([]*model.Magazine, error) {

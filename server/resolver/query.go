@@ -144,7 +144,7 @@ func (q *Query) Magazine(
 		ID int32
 	},
 ) (*magazineResolver, error) {
-	m, err := q.magazineRepository.GetOne(ctx, args.ID)
+	m, err := q.loader.Magazine(ctx, args.ID)
 	if err != nil {
 		return nil, err
 	}
