@@ -98,7 +98,7 @@ func (q *Query) Mangaka(
 		ID int32
 	},
 ) (*mangakaResolver, error) {
-	m, err := q.mangakaRepository.GetOne(ctx, args.ID)
+	m, err := q.loader.Mangaka(ctx, args.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -6,30 +6,39 @@ import (
 
 	"github.com/SpencerWhitehead7/no-manga/server/model"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Mangaka struct{ db *pgxpool.Pool }
 
-func (r *Mangaka) GetOne(ctx context.Context, ID int32) (*model.Mangaka, error) {
-	var m model.Mangaka
-
-	err := r.db.QueryRow(
+func (r *Mangaka) GetByIDs(ctx context.Context, ids []int32) (map[int32]*model.Mangaka, error) {
+	rows, err := r.db.Query(
 		ctx,
-		"SELECT * FROM mangaka WHERE id = $1",
-		ID,
-	).Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description)
+		"SELECT * FROM mangaka WHERE id = ANY($1)",
+		ids,
+	)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
-		}
-
-		log.Println("Mangaka row scan failed:", err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	return &m, err
+	idToMangaka := make(map[int32]*model.Mangaka, len(ids))
+
+	for rows.Next() {
+		var m model.Mangaka
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description)
+		if err != nil {
+			log.Println("Mangaka row scan failed:", err)
+		}
+
+		idToMangaka[m.ID] = &m
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToMangaka, err
 }
 
 func (r *Mangaka) GetAll(ctx context.Context) ([]*model.Mangaka, error) {

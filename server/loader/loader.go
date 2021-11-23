@@ -17,6 +17,7 @@ type Loader struct {
 	genres             *dataloader.Loader
 	manga              *dataloader.Loader
 	mangaList          *dataloader.Loader
+	mangaka            *dataloader.Loader
 }
 
 func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model.Chapter, error) {
@@ -82,11 +83,21 @@ func (l *Loader) MangaList(ctx context.Context) ([]*model.Manga, error) {
 	return v.([]*model.Manga), nil
 }
 
+func (l *Loader) Mangaka(ctx context.Context, id int32) (*model.Mangaka, error) {
+	v, err := l.mangaka.Load(ctx, int32Key(id))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.(*model.Mangaka), nil
+}
+
 // func (l *Loader) checkResult TODO: generics :/
 
 func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 	chapterBFs := newChapterBFs(db)
 	mangaBFs := newMangaBFs(db)
+	mangakaBFs := newMangakaBFs(db)
 
 	var cache dataloader.Cache
 	if !shouldCache {
@@ -101,5 +112,6 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 		genres:             dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),
 		manga:              dataloader.NewBatchedLoader(mangaBFs.byID, dataloader.WithCache(cache)),
 		mangaList:          dataloader.NewBatchedLoader(mangaBFs.list, dataloader.WithCache(cache)),
+		mangaka:            dataloader.NewBatchedLoader(mangakaBFs.byID, dataloader.WithCache(cache)),
 	}
 }
