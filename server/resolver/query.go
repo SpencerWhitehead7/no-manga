@@ -64,7 +64,7 @@ func (q *Query) Chapter(
 		ChapterNum float64
 	},
 ) (*chapterResolver, error) {
-	c, err := q.chapterRepository.GetOne(ctx, args.MangaID, args.ChapterNum)
+	c, err := q.loader.Chapter(ctx, args)
 	if err != nil {
 		return nil, err
 	}

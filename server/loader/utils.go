@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	"github.com/graph-gophers/dataloader"
+
+	"github.com/SpencerWhitehead7/no-manga/server/model"
 )
 
 type int32Key int32
@@ -19,6 +21,23 @@ func int32KeysToIDs(keys dataloader.Keys) []int32 {
 	ids := make([]int32, len(keys))
 	for i, k := range keys {
 		ids[i] = k.Raw().(int32)
+	}
+	return ids
+}
+
+type chapterKey model.ChapterID
+
+func (k chapterKey) String() string {
+	return k.Raw().(model.ChapterID).ID()
+}
+func (k chapterKey) Raw() interface{} {
+	return model.ChapterID(k)
+}
+
+func chapterKeysToIDs(keys dataloader.Keys) []model.ChapterID {
+	ids := make([]model.ChapterID, len(keys))
+	for i, k := range keys {
+		ids[i] = k.Raw().(model.ChapterID)
 	}
 	return ids
 }

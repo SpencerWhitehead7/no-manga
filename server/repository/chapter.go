@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/SpencerWhitehead7/no-manga/server/model"
@@ -12,24 +13,54 @@ import (
 
 type Chapter struct{ db *pgxpool.Pool }
 
-func (r *Chapter) GetOne(ctx context.Context, mangaID int32, chapterNum float64) (*model.Chapter, error) {
-	var c model.Chapter
-
-	err := r.db.QueryRow(
-		ctx,
-		"SELECT * FROM chapter WHERE manga_id = $1 AND chapter_num = $2",
-		mangaID, chapterNum,
-	).Scan(&c.MangaID, &c.ChapterNum, &c.Name, &c.PageCount, &c.UpdatedAt)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			return nil, nil
+func (r *Chapter) GetByIDs(ctx context.Context, ids []model.ChapterID) (map[int32]map[float64]*model.Chapter, error) {
+	query := "SELECT * FROM chapter"
+	args := make([]interface{}, len(ids)*2)
+	argNum := 0
+	for i, id := range ids {
+		if i != 0 {
+			query += " OR "
+		} else {
+			query += " WHERE "
 		}
-
-		log.Println("Chapter row scan failed:", err)
-		return nil, err
+		query += fmt.Sprintf("(manga_id = $%d AND chapter_num = $%d)", argNum+1, argNum+2)
+		args[argNum] = id.MangaID
+		args[argNum+1] = id.ChapterNum
+		argNum += 2
 	}
 
-	return &c, err
+	rows, err := r.db.Query(
+		ctx,
+		query,
+		args...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	idToChapter := make(map[int32]map[float64]*model.Chapter, len(ids))
+
+	for rows.Next() {
+		var c model.Chapter
+
+		err = rows.Scan(&c.MangaID, &c.ChapterNum, &c.Name, &c.PageCount, &c.UpdatedAt)
+		if err != nil {
+			log.Println("Chapter row scan failed:", err)
+		}
+
+		_, ok := idToChapter[c.MangaID]
+		if !ok {
+			idToChapter[c.MangaID] = make(map[float64]*model.Chapter)
+		}
+		idToChapter[c.MangaID][c.ChapterNum] = &c
+
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToChapter, err
 }
 
 func (r *Chapter) GetAll(ctx context.Context) ([]*model.Chapter, error) {
