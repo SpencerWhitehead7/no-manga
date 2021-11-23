@@ -27,6 +27,12 @@ func (l *chapterBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataload
 	return loadBatchSuccess
 }
 
+func (l *chapterBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	cList, err := l.chapterRepository.GetAll(ctx)
+
+	return handleSingleBatch(keys, cList, err)
+}
+
 func newChapterBFs(db *pgxpool.Pool) *chapterBFs {
 	return &chapterBFs{chapterRepository: repository.NewChapter(db)}
 }

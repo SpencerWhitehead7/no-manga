@@ -78,7 +78,7 @@ func (q *Query) Chapter(
 func (q *Query) ChapterList(
 	ctx context.Context,
 ) ([]*chapterResolver, error) {
-	return q.chapterMListToRList(q.chapterRepository.GetAll(ctx))
+	return q.chapterMListToRList(q.loader.ChapterList(ctx))
 }
 func (q *Query) chapterMListToRList(mList []*model.Chapter, err error) ([]*chapterResolver, error) {
 	if err != nil {
