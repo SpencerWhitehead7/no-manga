@@ -112,7 +112,7 @@ func (q *Query) Mangaka(
 func (q *Query) MangakaList(
 	ctx context.Context,
 ) ([]*mangakaResolver, error) {
-	mList, err := q.mangakaRepository.GetAll(ctx)
+	mList, err := q.loader.MangakaList(ctx)
 	if err != nil {
 		return nil, err
 	}

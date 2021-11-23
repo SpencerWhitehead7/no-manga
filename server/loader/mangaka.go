@@ -27,6 +27,12 @@ func (l *mangakaBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataload
 	return loadBatchSuccess
 }
 
+func (l *mangakaBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	mList, err := l.mangakaRepository.GetAll(ctx)
+
+	return handleSingleBatch(keys, mList, err)
+}
+
 func newMangakaBFs(db *pgxpool.Pool) *mangakaBFs {
 	return &mangakaBFs{mangakaRepository: repository.NewMangaka(db)}
 }
