@@ -126,20 +126,40 @@ func (r *Chapter) GetByMangas(ctx context.Context, ids []int32) (map[int32][]*mo
 	return idToChapters, err
 }
 
-func (r *Chapter) GetCount(ctx context.Context, manga *model.Manga) (int32, error) {
-	var count int32
-
-	err := r.db.QueryRow(
+func (r *Chapter) GetCountByMangas(ctx context.Context, ids []int32) (map[int32]int32, error) {
+	rows, err := r.db.Query(
 		ctx,
-		"SELECT count(*) FROM chapter WHERE manga_id = $1",
-		manga.ID,
-	).Scan(&count)
+		`
+		SELECT manga_id, COUNT(*)
+		FROM chapter
+		WHERE manga_id = ANY($1)
+		GROUP BY manga_id
+		`,
+		ids,
+	)
 	if err != nil {
-		log.Println("ChapterCount row scan failed:", err)
-		return count, err
+		return nil, err
+	}
+	defer rows.Close()
+
+	idToCount := make(map[int32]int32)
+
+	for rows.Next() {
+		var id int32
+		var count int32
+
+		err := rows.Scan(&id, &count)
+		if err != nil {
+			log.Println("ChapterCount row scan failed:", err)
+		}
+
+		idToCount[id] = count
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
 	}
 
-	return count, nil
+	return idToCount, err
 }
 
 func NewChapter(db *pgxpool.Pool) *Chapter {

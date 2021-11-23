@@ -11,6 +11,7 @@ import (
 
 type Loader struct {
 	chapter            *dataloader.Loader
+	chapterCount       *dataloader.Loader
 	chapterList        *dataloader.Loader
 	chapterListByManga *dataloader.Loader
 	genres             *dataloader.Loader
@@ -25,6 +26,15 @@ func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model
 	}
 
 	return v.(*model.Chapter), nil
+}
+
+func (l *Loader) ChapterCount(ctx context.Context, manga *model.Manga) (int32, error) {
+	v, err := l.chapterCount.Load(ctx, int32Key(manga.ID))()
+	if v == nil || err != nil {
+		return 0, err
+	}
+
+	return v.(int32), nil
 }
 
 func (l *Loader) ChapterList(ctx context.Context) ([]*model.Chapter, error) {
@@ -85,6 +95,7 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 
 	return &Loader{
 		chapter:            dataloader.NewBatchedLoader(chapterBFs.byID, dataloader.WithCache(cache)),
+		chapterCount:       dataloader.NewBatchedLoader(chapterBFs.count, dataloader.WithCache(cache)),
 		chapterList:        dataloader.NewBatchedLoader(chapterBFs.list, dataloader.WithCache(cache)),
 		chapterListByManga: dataloader.NewBatchedLoader(chapterBFs.listByManga, dataloader.WithCache(cache)),
 		genres:             dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),

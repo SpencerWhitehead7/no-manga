@@ -27,6 +27,22 @@ func (l *chapterBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataload
 	return loadBatchSuccess
 }
 
+func (l *chapterBFs) count(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	ids := int32KeysToIDs(keys)
+
+	idToCount, err := l.chapterRepository.GetCountByMangas(ctx, ids)
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	loadBatchSuccess := make([]*dataloader.Result, len(keys))
+	for i, id := range ids {
+		loadBatchSuccess[i] = &dataloader.Result{Data: idToCount[id]}
+	}
+
+	return loadBatchSuccess
+}
+
 func (l *chapterBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
 	cList, err := l.chapterRepository.GetAll(ctx)
 

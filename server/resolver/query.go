@@ -16,7 +16,6 @@ type Query struct {
 	// but this API is completely stateless and user independent,
 	// so I'm using a singleton
 	loader             *loader.Loader
-	chapterRepository  *repository.Chapter
 	magazineRepository *repository.Magazine
 	mangakaRepository  *repository.Mangaka
 	mangaRepository    *repository.Manga
@@ -178,7 +177,6 @@ func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*mag
 func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
 	return &Query{
 		loader:             loader.NewLoader(db, shouldDataLoaderCache),
-		chapterRepository:  repository.NewChapter(db),
 		magazineRepository: repository.NewMagazine(db),
 		mangakaRepository:  repository.NewMangaka(db),
 		mangaRepository:    repository.NewManga(db),
