@@ -49,17 +49,17 @@ func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {
 	))
 }
 
-func (r *Manga) GetByMangaka(ctx context.Context, mangaka *model.Mangaka) ([]*model.Manga, error) {
-	return r.getList(r.db.Query(
+func (r *Manga) GetByMangakas(ctx context.Context, ids []int32) (map[int32][]*model.Manga, error) {
+	return r.getMap(r.db.Query(
 		ctx,
 		`
-		SELECT m.*
+		SELECT m.*, mmkaj.mangaka_id
 		FROM manga m
 		JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
-		WHERE mmkaj.mangaka_id = $1
+		WHERE mmkaj.mangaka_id = ANY($1)
 		ORDER BY name
 		`,
-		mangaka.ID,
+		ids,
 	))
 }
 
@@ -114,6 +114,32 @@ func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
 	}
 
 	return list, nil
+}
+
+func (r *Manga) getMap(rows pgx.Rows, err error) (map[int32][]*model.Manga, error) {
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	idToMangas := make(map[int32][]*model.Manga)
+
+	for rows.Next() {
+		var id int32
+		var m model.Manga
+
+		err := rows.Scan(&m.ID, &m.Name, &m.OtherNames, &m.Description, &m.Demo, &m.StartDate, &m.EndDate, &id)
+		if err != nil {
+			log.Println("Manga row scan failed:", err)
+		}
+
+		idToMangas[id] = append(idToMangas[id], &m)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToMangas, nil
 }
 
 func (r *Manga) GetGenresByMangas(ctx context.Context, ids []int32) (map[int32][]string, error) {

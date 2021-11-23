@@ -33,6 +33,22 @@ func (l *mangaBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader
 	return handleSingleBatch(keys, mList, err)
 }
 
+func (l *mangaBFs) listByMangaka(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	ids := int32KeysToIDs(keys)
+
+	idToManga, err := l.mangaRepository.GetByMangakas(ctx, ids)
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	loadBatchSuccess := make([]*dataloader.Result, len(ids))
+	for i, id := range ids {
+		loadBatchSuccess[i] = &dataloader.Result{Data: idToManga[id]}
+	}
+
+	return loadBatchSuccess
+}
+
 func (l *mangaBFs) genres(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
 	ids := int32KeysToIDs(keys)
 

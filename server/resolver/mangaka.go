@@ -27,5 +27,5 @@ func (r *mangakaResolver) Description() string {
 	return r.mangaka.Description
 }
 func (r *mangakaResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
-	return r.query.mangaMListToRList(r.query.mangaRepository.GetByMangaka(ctx, r.mangaka))
+	return r.query.mangaMListToRList(r.query.loader.MangaListByMangaka(ctx, r.mangaka))
 }
