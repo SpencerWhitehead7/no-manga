@@ -33,6 +33,22 @@ func (l *mangaBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader
 	return handleSingleBatch(keys, mList, err)
 }
 
+func (l *mangaBFs) genres(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
+	ids := int32KeysToIDs(keys)
+
+	idToGenres, err := l.mangaRepository.GetGenresByMangas(ctx, ids)
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	loadBatchSuccess := make([]*dataloader.Result, len(ids))
+	for i, id := range ids {
+		loadBatchSuccess[i] = &dataloader.Result{Data: idToGenres[id]}
+	}
+
+	return loadBatchSuccess
+}
+
 func newMangaBFs(db *pgxpool.Pool) *mangaBFs {
 	return &mangaBFs{mangaRepository: repository.NewManga(db)}
 }

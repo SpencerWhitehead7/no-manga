@@ -10,8 +10,18 @@ import (
 )
 
 type Loader struct {
+	genres    *dataloader.Loader
 	manga     *dataloader.Loader
 	mangaList *dataloader.Loader
+}
+
+func (l *Loader) Genres(ctx context.Context, manga *model.Manga) ([]string, error) {
+	v, err := l.genres.Load(ctx, int32Key(manga.ID))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.([]string), nil
 }
 
 func (l *Loader) Manga(ctx context.Context, id int32) (*model.Manga, error) {
@@ -43,6 +53,7 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 	}
 
 	return &Loader{
+		genres:    dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),
 		manga:     dataloader.NewBatchedLoader(mangaBFs.byID, dataloader.WithCache(cache)),
 		mangaList: dataloader.NewBatchedLoader(mangaBFs.list, dataloader.WithCache(cache)),
 	}

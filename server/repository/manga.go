@@ -116,38 +116,40 @@ func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
 	return list, nil
 }
 
-func (r *Manga) GetGenres(ctx context.Context, manga *model.Manga) ([]string, error) {
-	var list = []string{}
-
+func (r *Manga) GetGenresByMangas(ctx context.Context, ids []int32) (map[int32][]string, error) {
 	rows, err := r.db.Query(
 		ctx,
 		`
-			SELECT genre FROM manga_genre
-			WHERE manga_id = $1
-			ORDER BY genre
+		SELECT manga_id, ARRAY_AGG(genre ORDER BY genre) as genres
+		FROM manga_genre
+		WHERE manga_id = ANY($1)
+		GROUP BY manga_id;
 		`,
-		manga.ID,
+		ids,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	for rows.Next() {
-		var g string
+	idToGenres := make(map[int32][]string, len(ids))
 
-		err := rows.Scan(&g)
+	for rows.Next() {
+		var id int32
+		var genres []string
+
+		err := rows.Scan(&id, &genres)
 		if err != nil {
 			log.Println("Genre row scan failed:", err)
 		}
 
-		list = append(list, g)
+		idToGenres[id] = genres
 	}
 	if rows.Err() != nil {
 		return nil, rows.Err()
 	}
 
-	return list, nil
+	return idToGenres, nil
 }
 
 func NewManga(db *pgxpool.Pool) *Manga {
