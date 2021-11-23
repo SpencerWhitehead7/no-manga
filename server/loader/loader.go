@@ -10,11 +10,12 @@ import (
 )
 
 type Loader struct {
-	chapter     *dataloader.Loader
-	chapterList *dataloader.Loader
-	genres      *dataloader.Loader
-	manga       *dataloader.Loader
-	mangaList   *dataloader.Loader
+	chapter            *dataloader.Loader
+	chapterList        *dataloader.Loader
+	chapterListByManga *dataloader.Loader
+	genres             *dataloader.Loader
+	manga              *dataloader.Loader
+	mangaList          *dataloader.Loader
 }
 
 func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model.Chapter, error) {
@@ -28,6 +29,15 @@ func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model
 
 func (l *Loader) ChapterList(ctx context.Context) ([]*model.Chapter, error) {
 	v, err := l.chapterList.Load(ctx, dataloader.StringKey("chapterList"))()
+	if v == nil || err != nil {
+		return nil, err
+	}
+
+	return v.([]*model.Chapter), nil
+}
+
+func (l *Loader) ChapterListByManga(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
+	v, err := l.chapterListByManga.Load(ctx, int32Key(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -74,10 +84,11 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 	}
 
 	return &Loader{
-		chapter:     dataloader.NewBatchedLoader(chapterBFs.byID, dataloader.WithCache(cache)),
-		chapterList: dataloader.NewBatchedLoader(chapterBFs.list, dataloader.WithCache(cache)),
-		genres:      dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),
-		manga:       dataloader.NewBatchedLoader(mangaBFs.byID, dataloader.WithCache(cache)),
-		mangaList:   dataloader.NewBatchedLoader(mangaBFs.list, dataloader.WithCache(cache)),
+		chapter:            dataloader.NewBatchedLoader(chapterBFs.byID, dataloader.WithCache(cache)),
+		chapterList:        dataloader.NewBatchedLoader(chapterBFs.list, dataloader.WithCache(cache)),
+		chapterListByManga: dataloader.NewBatchedLoader(chapterBFs.listByManga, dataloader.WithCache(cache)),
+		genres:             dataloader.NewBatchedLoader(mangaBFs.genres, dataloader.WithCache(cache)),
+		manga:              dataloader.NewBatchedLoader(mangaBFs.byID, dataloader.WithCache(cache)),
+		mangaList:          dataloader.NewBatchedLoader(mangaBFs.list, dataloader.WithCache(cache)),
 	}
 }

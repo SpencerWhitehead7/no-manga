@@ -7,7 +7,6 @@ import (
 
 	"github.com/SpencerWhitehead7/no-manga/server/model"
 
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -64,21 +63,10 @@ func (r *Chapter) GetByIDs(ctx context.Context, ids []model.ChapterID) (map[int3
 }
 
 func (r *Chapter) GetAll(ctx context.Context) ([]*model.Chapter, error) {
-	return r.getList(r.db.Query(
+	rows, err := r.db.Query(
 		ctx,
 		"SELECT * FROM chapter ORDER BY updated_at DESC, manga_id, chapter_num",
-	))
-}
-
-func (r *Chapter) GetByManga(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
-	return r.getList(r.db.Query(
-		ctx,
-		"SELECT * FROM chapter WHERE manga_id = $1 ORDER BY chapter_num",
-		manga.ID,
-	))
-}
-
-func (r *Chapter) getList(rows pgx.Rows, err error) ([]*model.Chapter, error) {
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +89,41 @@ func (r *Chapter) getList(rows pgx.Rows, err error) ([]*model.Chapter, error) {
 	}
 
 	return list, nil
+}
+
+func (r *Chapter) GetByMangas(ctx context.Context, ids []int32) (map[int32][]*model.Chapter, error) {
+	rows, err := r.db.Query(
+		ctx,
+		`
+		SELECT *
+		FROM chapter
+		WHERE manga_id = ANY($1)
+		ORDER BY manga_id, chapter_num
+		`,
+		ids,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	idToChapters := make(map[int32][]*model.Chapter)
+
+	for rows.Next() {
+		var c model.Chapter
+
+		err := rows.Scan(&c.MangaID, &c.ChapterNum, &c.Name, &c.PageCount, &c.UpdatedAt)
+		if err != nil {
+			log.Println("Chapter row scan failed:", err)
+		}
+
+		idToChapters[c.MangaID] = append(idToChapters[c.MangaID], &c)
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return idToChapters, err
 }
 
 func (r *Chapter) GetCount(ctx context.Context, manga *model.Manga) (int32, error) {
