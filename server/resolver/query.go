@@ -17,7 +17,6 @@ type Query struct {
 	// so I'm using a singleton
 	loader             *loader.Loader
 	magazineRepository *repository.Magazine
-	mangaRepository    *repository.Manga
 }
 
 func (q *Query) Manga(
@@ -177,6 +176,5 @@ func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
 	return &Query{
 		loader:             loader.NewLoader(db, shouldDataLoaderCache),
 		magazineRepository: repository.NewMagazine(db),
-		mangaRepository:    repository.NewManga(db),
 	}
 }

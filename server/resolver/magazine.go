@@ -30,5 +30,5 @@ func (r *magazineResolver) Demo() string {
 	return r.magazine.Demo
 }
 func (r *magazineResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
-	return r.query.mangaMListToRList(r.query.mangaRepository.GetByMagazine(ctx, r.magazine))
+	return r.query.mangaMListToRList(r.query.loader.MangaListByMagazine(ctx, r.magazine))
 }

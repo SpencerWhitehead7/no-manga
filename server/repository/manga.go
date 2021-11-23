@@ -43,41 +43,10 @@ func (r *Manga) GetByIDs(ctx context.Context, ids []int32) (map[int32]*model.Man
 }
 
 func (r *Manga) GetAll(ctx context.Context) ([]*model.Manga, error) {
-	return r.getList(r.db.Query(
+	rows, err := r.db.Query(
 		ctx,
 		"SELECT * FROM manga ORDER BY name",
-	))
-}
-
-func (r *Manga) GetByMangakas(ctx context.Context, ids []int32) (map[int32][]*model.Manga, error) {
-	return r.getMap(r.db.Query(
-		ctx,
-		`
-		SELECT m.*, mmkaj.mangaka_id
-		FROM manga m
-		JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
-		WHERE mmkaj.mangaka_id = ANY($1)
-		ORDER BY name
-		`,
-		ids,
-	))
-}
-
-func (r *Manga) GetByMagazine(ctx context.Context, magazine *model.Magazine) ([]*model.Manga, error) {
-	return r.getList(r.db.Query(
-		ctx,
-		`
-		SELECT m.*
-		FROM manga m
-		JOIN magazine_manga magm ON m.id = magm.manga_id
-		WHERE magm.magazine_id = $1
-		ORDER BY name 
-		`,
-		magazine.ID,
-	))
-}
-
-func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -100,6 +69,34 @@ func (r *Manga) getList(rows pgx.Rows, err error) ([]*model.Manga, error) {
 	}
 
 	return list, nil
+}
+
+func (r *Manga) GetByMangakas(ctx context.Context, ids []int32) (map[int32][]*model.Manga, error) {
+	return r.getMap(r.db.Query(
+		ctx,
+		`
+		SELECT m.*, mmkaj.mangaka_id
+		FROM manga m
+		JOIN manga_mangaka_job mmkaj ON m.id = mmkaj.manga_id
+		WHERE mmkaj.mangaka_id = ANY($1)
+		ORDER BY name
+		`,
+		ids,
+	))
+}
+
+func (r *Manga) GetByMagazines(ctx context.Context, ids []int32) (map[int32][]*model.Manga, error) {
+	return r.getMap(r.db.Query(
+		ctx,
+		`
+		SELECT m.*, magm.magazine_id
+		FROM manga m
+		JOIN magazine_manga magm ON m.id = magm.manga_id
+		WHERE magm.magazine_id = ANY($1)
+		ORDER BY name 
+		`,
+		ids,
+	))
 }
 
 func (r *Manga) getMap(rows pgx.Rows, err error) (map[int32][]*model.Manga, error) {
