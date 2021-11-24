@@ -10,19 +10,24 @@ const schema = fs.readFileSync(
   'utf8'
 ).split("`")[1]
 
+const mangaIDCount = 4012
+const avgChapterCount = 180 // low enough to not incur too many misses
+const mangakaIDCount = 2012
+const magazineIDCount = 1009
+
 const args = {
   manga: {
-    ID: [...Array(24).keys()].map(k => k + 1),
+    ID: [...Array(mangaIDCount / 4).keys()].map(k => k + 1),
   },
   chapter: {
-    mangaID: [...Array(24).keys()].map(k => k + 1),
-    chapterNum: [...Array(6).keys()].map(k => k + 1),
+    mangaID: [...Array(mangaIDCount / 4).keys()].map(k => k + 1),
+    chapterNum: [...Array(avgChapterCount / 90).keys()].map(k => k + 1),
   },
   mangaka: {
-    ID: [...Array(24).keys()].map(k => k + 1),
+    ID: [...Array(mangakaIDCount / 4).keys()].map(k => k + 1),
   },
   magazine: {
-    ID: [...Array(18).keys()].map(k => k + 1),
+    ID: [...Array((magazineIDCount - 1) / 4).keys()].map(k => k + 1),
   },
 }
 
@@ -68,6 +73,9 @@ const testCases = easyGraphQLLoadTester.artillery({
   // onlyCustomQueries: true,
   // queryFile: true,
   // withMutations: true,
+  // selectedQueries: ["manga", "mangaList", "chapter", "chapterList", "mangaka", "mangakaList", "magazine", "magazineList"],
+  selectedQueries: ["manga", "chapter", "mangaka", "magazine"],
+  // selectedQueries: ["magazineList"],
 })
 
 module.exports = {
