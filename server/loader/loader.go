@@ -37,7 +37,7 @@ func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model
 }
 
 func (l *Loader) ChapterCount(ctx context.Context, manga *model.Manga) (int32, error) {
-	v, err := l.chapterCount.Load(ctx, int32Key(manga.ID))()
+	v, err := l.chapterCount.Load(ctx, chapterCountKey(manga.ID))()
 	if v == nil || err != nil {
 		return 0, err
 	}
@@ -55,7 +55,7 @@ func (l *Loader) ChapterList(ctx context.Context) ([]*model.Chapter, error) {
 }
 
 func (l *Loader) ChapterListByManga(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
-	v, err := l.chapterListByManga.Load(ctx, int32Key(manga.ID))()
+	v, err := l.chapterListByManga.Load(ctx, chapterListByMangaKey(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (l *Loader) ChapterListByManga(ctx context.Context, manga *model.Manga) ([]
 }
 
 func (l *Loader) Genres(ctx context.Context, manga *model.Manga) ([]string, error) {
-	v, err := l.genres.Load(ctx, int32Key(manga.ID))()
+	v, err := l.genres.Load(ctx, genresKey(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (l *Loader) Genres(ctx context.Context, manga *model.Manga) ([]string, erro
 }
 
 func (l *Loader) Magazine(ctx context.Context, id int32) (*model.Magazine, error) {
-	v, err := l.magazine.Load(ctx, int32Key(id))()
+	v, err := l.magazine.Load(ctx, magazineKey(id))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (l *Loader) MagazineList(ctx context.Context) ([]*model.Magazine, error) {
 }
 
 func (l *Loader) MagazineListByManga(ctx context.Context, manga *model.Manga) ([]*model.Magazine, error) {
-	v, err := l.magazineListByManga.Load(ctx, int32Key(manga.ID))()
+	v, err := l.magazineListByManga.Load(ctx, magazineListByMangaKey(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (l *Loader) MagazineListByManga(ctx context.Context, manga *model.Manga) ([
 }
 
 func (l *Loader) Manga(ctx context.Context, id int32) (*model.Manga, error) {
-	v, err := l.manga.Load(ctx, int32Key(id))()
+	v, err := l.manga.Load(ctx, mangaKey(id))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (l *Loader) MangaList(ctx context.Context) ([]*model.Manga, error) {
 }
 
 func (l *Loader) MangaListByMagazine(ctx context.Context, magazine *model.Magazine) ([]*model.Manga, error) {
-	v, err := l.mangaListByMagazine.Load(ctx, int32Key(magazine.ID))()
+	v, err := l.mangaListByMagazine.Load(ctx, mangaListByMagazineKey(magazine.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (l *Loader) MangaListByMagazine(ctx context.Context, magazine *model.Magazi
 }
 
 func (l *Loader) MangaListByMangaka(ctx context.Context, mangaka *model.Mangaka) ([]*model.Manga, error) {
-	v, err := l.mangaListByMangaka.Load(ctx, int32Key(mangaka.ID))()
+	v, err := l.mangaListByMangaka.Load(ctx, mangaListByMangakaKey(mangaka.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (l *Loader) MangaListByMangaka(ctx context.Context, mangaka *model.Mangaka)
 }
 
 func (l *Loader) MangaListBySeriesMangaka(ctx context.Context, seriesMangaka *model.SeriesMangaka) ([]*model.Manga, error) {
-	v, err := l.mangaListByMangaka.Load(ctx, int32Key(seriesMangaka.ID))()
+	v, err := l.mangaListByMangaka.Load(ctx, mangaListBySeriesMangakaKey(seriesMangaka.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (l *Loader) MangaListBySeriesMangaka(ctx context.Context, seriesMangaka *mo
 }
 
 func (l *Loader) Mangaka(ctx context.Context, id int32) (*model.Mangaka, error) {
-	v, err := l.mangaka.Load(ctx, int32Key(id))()
+	v, err := l.mangaka.Load(ctx, mangakaKey(id))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (l *Loader) MangakaList(ctx context.Context) ([]*model.Mangaka, error) {
 }
 
 func (l *Loader) SeriesMangakaList(ctx context.Context, manga *model.Manga) ([]*model.SeriesMangaka, error) {
-	v, err := l.seriesMangakaList.Load(ctx, int32Key(manga.ID))()
+	v, err := l.seriesMangakaList.Load(ctx, seriesMangakaListKey(manga.ID))()
 	if v == nil || err != nil {
 		return nil, err
 	}
@@ -180,7 +180,9 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 	mangakaBFs := newMangakaBFs(db)
 
 	var cache dataloader.Cache
-	if !shouldCache {
+	if shouldCache {
+		cache = newRistrettoCache()
+	} else {
 		cache = &dataloader.NoCache{}
 	}
 

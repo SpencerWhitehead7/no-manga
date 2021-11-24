@@ -3,6 +3,7 @@ module github.com/SpencerWhitehead7/no-manga/server
 go 1.15
 
 require (
+	github.com/dgraph-io/ristretto v0.1.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/graph-gophers/graphql-go v1.2.0
