@@ -31,3 +31,7 @@ func (r *chapterResolver) UpdatedAt() graphql.Time {
 func (r *chapterResolver) Manga(ctx context.Context) (*mangaResolver, error) {
 	return r.query.Manga(ctx, struct{ ID int32 }{ID: r.chapter.MangaID})
 }
+
+func newChapterResolver(m *model.Chapter, q *Query) *chapterResolver {
+	return &chapterResolver{chapter: m, query: q}
+}

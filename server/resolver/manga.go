@@ -45,11 +45,17 @@ func (r *mangaResolver) ChapterCount(ctx context.Context) (int32, error) {
 	return r.query.loader.ChapterCount(ctx, r.manga)
 }
 func (r *mangaResolver) ChapterList(ctx context.Context) ([]*chapterResolver, error) {
-	return r.query.chapterMListToRList(r.query.loader.ChapterListByManga(ctx, r.manga))
+	mList, err := r.query.loader.ChapterListByManga(ctx, r.manga)
+	return handleList(r.query, newChapterResolver, mList, err)
 }
 func (r *mangaResolver) MangakaList(ctx context.Context) ([]*seriesMangakaResolver, error) {
 	return r.query.seriesMangakaList(ctx, r.manga)
 }
 func (r *mangaResolver) MagazineList(ctx context.Context) ([]*magazineResolver, error) {
-	return r.query.magazineMListToRList(r.query.loader.MagazineListByManga(ctx, r.manga))
+	mList, err := r.query.loader.MagazineListByManga(ctx, r.manga)
+	return handleList(r.query, newMagazineResolver, mList, err)
+}
+
+func newMangaResolver(m *model.Manga, q *Query) *mangaResolver {
+	return &mangaResolver{manga: m, query: q}
 }

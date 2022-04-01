@@ -24,32 +24,14 @@ func (q *Query) Manga(
 	},
 ) (*mangaResolver, error) {
 	m, err := q.loader.Manga(ctx, args.ID)
-	if err != nil {
-		return nil, err
-	}
-	if m == nil {
-		return nil, nil
-	}
-
-	return &mangaResolver{manga: m, query: q}, nil
+	return handleSingle(q, newMangaResolver, m, err)
 }
 
 func (q *Query) MangaList(
 	ctx context.Context,
 ) ([]*mangaResolver, error) {
-	return q.mangaMListToRList(q.loader.MangaList(ctx))
-}
-func (q *Query) mangaMListToRList(mList []*model.Manga, err error) ([]*mangaResolver, error) {
-	if err != nil {
-		return nil, err
-	}
-
-	rList := make([]*mangaResolver, len(mList))
-	for i, m := range mList {
-		rList[i] = &mangaResolver{manga: m, query: q}
-	}
-
-	return rList, nil
+	mList, err := q.loader.MangaList(ctx)
+	return handleList(q, newMangaResolver, mList, err)
 }
 
 func (q *Query) Chapter(
@@ -60,32 +42,14 @@ func (q *Query) Chapter(
 	},
 ) (*chapterResolver, error) {
 	c, err := q.loader.Chapter(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-	if c == nil {
-		return nil, nil
-	}
-
-	return &chapterResolver{chapter: c, query: q}, nil
+	return handleSingle(q, newChapterResolver, c, err)
 }
 
 func (q *Query) ChapterList(
 	ctx context.Context,
 ) ([]*chapterResolver, error) {
-	return q.chapterMListToRList(q.loader.ChapterList(ctx))
-}
-func (q *Query) chapterMListToRList(mList []*model.Chapter, err error) ([]*chapterResolver, error) {
-	if err != nil {
-		return nil, err
-	}
-
-	rlist := make([]*chapterResolver, len(mList))
-	for i, c := range mList {
-		rlist[i] = &chapterResolver{chapter: c, query: q}
-	}
-
-	return rlist, nil
+	cList, err := q.loader.ChapterList(ctx)
+	return handleList(q, newChapterResolver, cList, err)
 }
 
 func (q *Query) Mangaka(
@@ -95,44 +59,19 @@ func (q *Query) Mangaka(
 	},
 ) (*mangakaResolver, error) {
 	m, err := q.loader.Mangaka(ctx, args.ID)
-	if err != nil {
-		return nil, err
-	}
-	if m == nil {
-		return nil, nil
-	}
-
-	return &mangakaResolver{mangaka: m, query: q}, nil
+	return handleSingle(q, newMangakaResolver, m, err)
 }
 
 func (q *Query) MangakaList(
 	ctx context.Context,
 ) ([]*mangakaResolver, error) {
 	mList, err := q.loader.MangakaList(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	rList := make([]*mangakaResolver, len(mList))
-	for i, m := range mList {
-		rList[i] = &mangakaResolver{mangaka: m, query: q}
-	}
-
-	return rList, nil
+	return handleList(q, newMangakaResolver, mList, err)
 }
 
 func (q *Query) seriesMangakaList(ctx context.Context, manga *model.Manga) ([]*seriesMangakaResolver, error) {
-	sList, err := q.loader.SeriesMangakaList(ctx, manga)
-	if err != nil {
-		return nil, err
-	}
-
-	rList := make([]*seriesMangakaResolver, len(sList))
-	for i, s := range sList {
-		rList[i] = &seriesMangakaResolver{seriesMangaka: s, query: q}
-	}
-
-	return rList, nil
+	mList, err := q.loader.SeriesMangakaList(ctx, manga)
+	return handleList(q, newSeriesMangakaResolver, mList, err)
 }
 
 func (q *Query) Magazine(
@@ -142,6 +81,21 @@ func (q *Query) Magazine(
 	},
 ) (*magazineResolver, error) {
 	m, err := q.loader.Magazine(ctx, args.ID)
+	return handleSingle(q, newMagazineResolver, m, err)
+}
+
+func (q *Query) MagazineList(
+	ctx context.Context,
+) ([]*magazineResolver, error) {
+	mList, err := q.loader.MagazineList(ctx)
+	return handleList(q, newMagazineResolver, mList, err)
+}
+
+func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
+	return &Query{loader: loader.NewLoader(db, shouldDataLoaderCache)}
+}
+
+func handleSingle[M any, R any](q *Query, newResolver func(*M, *Query) *R, m *M, err error) (*R, error) {
 	if err != nil {
 		return nil, err
 	}
@@ -149,27 +103,18 @@ func (q *Query) Magazine(
 		return nil, nil
 	}
 
-	return &magazineResolver{magazine: m, query: q}, nil
+	return newResolver(m, q), nil
 }
 
-func (q *Query) MagazineList(
-	ctx context.Context,
-) ([]*magazineResolver, error) {
-	return q.magazineMListToRList(q.loader.MagazineList(ctx))
-}
-func (q *Query) magazineMListToRList(mList []*model.Magazine, err error) ([]*magazineResolver, error) {
+func handleList[M any, R any](q *Query, newResolver func(*M, *Query) *R, mList []*M, err error) ([]*R, error) {
 	if err != nil {
 		return nil, err
 	}
 
-	rList := make([]*magazineResolver, len(mList))
+	rList := make([]*R, len(mList))
 	for i, m := range mList {
-		rList[i] = &magazineResolver{magazine: m, query: q}
+		rList[i] = newResolver(m, q)
 	}
 
 	return rList, nil
-}
-
-func NewQuery(db *pgxpool.Pool, shouldDataLoaderCache bool) *Query {
-	return &Query{loader: loader.NewLoader(db, shouldDataLoaderCache)}
 }

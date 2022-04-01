@@ -30,5 +30,10 @@ func (r *magazineResolver) Demo() string {
 	return r.magazine.Demo
 }
 func (r *magazineResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
-	return r.query.mangaMListToRList(r.query.loader.MangaListByMagazine(ctx, r.magazine))
+	mList, err := r.query.loader.MangaListByMagazine(ctx, r.magazine)
+	return handleList(r.query, newMangaResolver, mList, err)
+}
+
+func newMagazineResolver(m *model.Magazine, q *Query) *magazineResolver {
+	return &magazineResolver{magazine: m, query: q}
 }

@@ -30,5 +30,10 @@ func (r *seriesMangakaResolver) Job() string {
 	return r.seriesMangaka.Job
 }
 func (r *seriesMangakaResolver) MangaList(ctx context.Context) ([]*mangaResolver, error) {
-	return r.query.mangaMListToRList(r.query.loader.MangaListBySeriesMangaka(ctx, r.seriesMangaka))
+	mList, err := r.query.loader.MangaListBySeriesMangaka(ctx, r.seriesMangaka)
+	return handleList(r.query, newMangaResolver, mList, err)
+}
+
+func newSeriesMangakaResolver(m *model.SeriesMangaka, q *Query) *seriesMangakaResolver {
+	return &seriesMangakaResolver{seriesMangaka: m, query: q}
 }
