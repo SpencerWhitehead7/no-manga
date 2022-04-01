@@ -29,149 +29,83 @@ type Loader struct {
 
 func (l *Loader) Chapter(ctx context.Context, chapterID model.ChapterID) (*model.Chapter, error) {
 	v, err := l.chapter.Load(ctx, chapterKey(chapterID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.(*model.Chapter), nil
+	return handleLoaderResult[*model.Chapter](v, err)
 }
 
 func (l *Loader) ChapterCount(ctx context.Context, manga *model.Manga) (int32, error) {
 	v, err := l.chapterCount.Load(ctx, chapterCountKey(manga.ID))()
-	if v == nil || err != nil {
-		return 0, err
-	}
-
-	return v.(int32), nil
+	return handleLoaderResult[int32](v, err)
 }
 
 func (l *Loader) ChapterList(ctx context.Context) ([]*model.Chapter, error) {
 	v, err := l.chapterList.Load(ctx, dataloader.StringKey("chapterList"))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Chapter), nil
+	return handleLoaderResult[[]*model.Chapter](v, err)
 }
 
 func (l *Loader) ChapterListByManga(ctx context.Context, manga *model.Manga) ([]*model.Chapter, error) {
 	v, err := l.chapterListByManga.Load(ctx, chapterListByMangaKey(manga.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Chapter), nil
+	return handleLoaderResult[[]*model.Chapter](v, err)
 }
 
 func (l *Loader) Genres(ctx context.Context, manga *model.Manga) ([]string, error) {
 	v, err := l.genres.Load(ctx, genresKey(manga.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]string), nil
+	return handleLoaderResult[[]string](v, err)
 }
 
 func (l *Loader) Magazine(ctx context.Context, id int32) (*model.Magazine, error) {
 	v, err := l.magazine.Load(ctx, magazineKey(id))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.(*model.Magazine), nil
+	return handleLoaderResult[*model.Magazine](v, err)
 }
 
 func (l *Loader) MagazineList(ctx context.Context) ([]*model.Magazine, error) {
 	v, err := l.magazineList.Load(ctx, dataloader.StringKey("magazineList"))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Magazine), nil
+	return handleLoaderResult[[]*model.Magazine](v, err)
 }
 
 func (l *Loader) MagazineListByManga(ctx context.Context, manga *model.Manga) ([]*model.Magazine, error) {
 	v, err := l.magazineListByManga.Load(ctx, magazineListByMangaKey(manga.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Magazine), nil
+	return handleLoaderResult[[]*model.Magazine](v, err)
 }
 
 func (l *Loader) Manga(ctx context.Context, id int32) (*model.Manga, error) {
 	v, err := l.manga.Load(ctx, mangaKey(id))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.(*model.Manga), nil
+	return handleLoaderResult[*model.Manga](v, err)
 }
 
 func (l *Loader) MangaList(ctx context.Context) ([]*model.Manga, error) {
 	v, err := l.mangaList.Load(ctx, dataloader.StringKey("mangaList"))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Manga), nil
+	return handleLoaderResult[[]*model.Manga](v, err)
 }
 
 func (l *Loader) MangaListByMagazine(ctx context.Context, magazine *model.Magazine) ([]*model.Manga, error) {
 	v, err := l.mangaListByMagazine.Load(ctx, mangaListByMagazineKey(magazine.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Manga), nil
+	return handleLoaderResult[[]*model.Manga](v, err)
 }
 
 func (l *Loader) MangaListByMangaka(ctx context.Context, mangaka *model.Mangaka) ([]*model.Manga, error) {
 	v, err := l.mangaListByMangaka.Load(ctx, mangaListByMangakaKey(mangaka.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Manga), nil
+	return handleLoaderResult[[]*model.Manga](v, err)
 }
 
 func (l *Loader) MangaListBySeriesMangaka(ctx context.Context, seriesMangaka *model.SeriesMangaka) ([]*model.Manga, error) {
 	v, err := l.mangaListByMangaka.Load(ctx, mangaListBySeriesMangakaKey(seriesMangaka.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Manga), nil
+	return handleLoaderResult[[]*model.Manga](v, err)
 }
 
 func (l *Loader) Mangaka(ctx context.Context, id int32) (*model.Mangaka, error) {
 	v, err := l.mangaka.Load(ctx, mangakaKey(id))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.(*model.Mangaka), nil
+	return handleLoaderResult[*model.Mangaka](v, err)
 }
 
 func (l *Loader) MangakaList(ctx context.Context) ([]*model.Mangaka, error) {
 	v, err := l.mangakaList.Load(ctx, dataloader.StringKey("mangakaList"))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.Mangaka), nil
+	return handleLoaderResult[[]*model.Mangaka](v, err)
 }
 
 func (l *Loader) SeriesMangakaList(ctx context.Context, manga *model.Manga) ([]*model.SeriesMangaka, error) {
 	v, err := l.seriesMangakaList.Load(ctx, seriesMangakaListKey(manga.ID))()
-	if v == nil || err != nil {
-		return nil, err
-	}
-
-	return v.([]*model.SeriesMangaka), nil
+	return handleLoaderResult[[]*model.SeriesMangaka](v, err)
 }
-
-// func (l *Loader) checkResult TODO: generics :/
 
 func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 	chapterBFs := newChapterBFs(db)
@@ -203,4 +137,12 @@ func NewLoader(db *pgxpool.Pool, shouldCache bool) *Loader {
 		mangakaList:         dataloader.NewBatchedLoader(mangakaBFs.list, dataloader.WithCache(cache)),
 		seriesMangakaList:   dataloader.NewBatchedLoader(mangakaBFs.listByManga, dataloader.WithCache(cache)),
 	}
+}
+
+func handleLoaderResult[T any](result interface{}, err error) (T, error) {
+	if result == nil || err != nil {
+		var nilResult T
+		return nilResult, err
+	}
+	return result.(T), nil
 }

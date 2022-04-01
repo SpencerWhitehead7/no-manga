@@ -12,73 +12,41 @@ import (
 type mangaBFs struct{ mangaRepository *repository.Manga }
 
 func (l *mangaBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToManga, err := l.mangaRepository.GetByIDs(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(ids))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToManga[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToManga, err)
 }
 
 func (l *mangaBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
 	mList, err := l.mangaRepository.GetAll(ctx)
 
-	return handleSingleBatch(keys, mList, err)
+	return handleSingle(keys, mList, err)
 }
 
 func (l *mangaBFs) listByMagazine(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToManga, err := l.mangaRepository.GetByMagazines(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(ids))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToManga[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToManga, err)
 }
 
 func (l *mangaBFs) listByMangaka(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToManga, err := l.mangaRepository.GetByMangakas(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(ids))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToManga[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToManga, err)
 }
 
 func (l *mangaBFs) genres(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToGenres, err := l.mangaRepository.GetGenresByMangas(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(ids))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToGenres[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToGenres, err)
 }
 
 func newMangaBFs(db *pgxpool.Pool) *mangaBFs {

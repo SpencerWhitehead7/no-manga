@@ -8,7 +8,7 @@ import (
 	"github.com/SpencerWhitehead7/no-manga/server/model"
 )
 
-func int32KeysToIDs(keys dataloader.Keys) []int32 {
+func keysToIDs(keys dataloader.Keys) []int32 {
 	ids := make([]int32, len(keys))
 	for i, k := range keys {
 		ids[i] = k.Raw().(int32)
@@ -23,14 +23,6 @@ func (k chapterKey) String() string {
 }
 func (k chapterKey) Raw() interface{} {
 	return model.ChapterID(k)
-}
-
-func chapterKeysToIDs(keys dataloader.Keys) []model.ChapterID {
-	ids := make([]model.ChapterID, len(keys))
-	for i, k := range keys {
-		ids[i] = k.Raw().(model.ChapterID)
-	}
-	return ids
 }
 
 type chapterCountKey int32
@@ -143,12 +135,22 @@ func loadBatchError(keys dataloader.Keys, err error) []*dataloader.Result {
 	return res
 }
 
-// func loadBatchSuccess() TODO generics :/
-
-func handleSingleBatch(keys dataloader.Keys, list interface{}, err error) []*dataloader.Result {
+func handleSingle[T any](keys dataloader.Keys, list T, err error) []*dataloader.Result {
 	if err != nil {
 		return loadBatchError(keys, err)
 	}
 
 	return []*dataloader.Result{{Data: list}}
+}
+
+func handleBatch[K comparable, V any](keys dataloader.Keys, ids []K, idTo map[K]V, err error) []*dataloader.Result {
+	if err != nil {
+		return loadBatchError(keys, err)
+	}
+
+	loadBatchSuccess := make([]*dataloader.Result, len(ids))
+	for i, id := range ids {
+		loadBatchSuccess[i] = &dataloader.Result{Data: idTo[id]}
+	}
+	return loadBatchSuccess
 }

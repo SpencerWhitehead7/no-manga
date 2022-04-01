@@ -6,13 +6,18 @@ import (
 	"github.com/graph-gophers/dataloader"
 	"github.com/jackc/pgx/v4/pgxpool"
 
+	"github.com/SpencerWhitehead7/no-manga/server/model"
 	"github.com/SpencerWhitehead7/no-manga/server/repository"
 )
 
 type chapterBFs struct{ chapterRepository *repository.Chapter }
 
+// not using normal helpers because model.ChapterID keys are a special case
 func (l *chapterBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := chapterKeysToIDs(keys)
+	ids := make([]model.ChapterID, len(keys))
+	for i, k := range keys {
+		ids[i] = k.Raw().(model.ChapterID)
+	}
 
 	idToChapter, err := l.chapterRepository.GetByIDs(ctx, ids)
 	if err != nil {
@@ -28,41 +33,25 @@ func (l *chapterBFs) byID(ctx context.Context, keys dataloader.Keys) []*dataload
 }
 
 func (l *chapterBFs) count(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToCount, err := l.chapterRepository.GetCountByMangas(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(keys))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToCount[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToCount, err)
 }
 
 func (l *chapterBFs) list(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
 	cList, err := l.chapterRepository.GetAll(ctx)
 
-	return handleSingleBatch(keys, cList, err)
+	return handleSingle(keys, cList, err)
 }
 
 func (l *chapterBFs) listByManga(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
-	ids := int32KeysToIDs(keys)
+	ids := keysToIDs(keys)
 
 	idToChapters, err := l.chapterRepository.GetByMangas(ctx, ids)
-	if err != nil {
-		return loadBatchError(keys, err)
-	}
 
-	loadBatchSuccess := make([]*dataloader.Result, len(ids))
-	for i, id := range ids {
-		loadBatchSuccess[i] = &dataloader.Result{Data: idToChapters[id]}
-	}
-
-	return loadBatchSuccess
+	return handleBatch(keys, ids, idToChapters, err)
 }
 
 func newChapterBFs(db *pgxpool.Pool) *chapterBFs {
