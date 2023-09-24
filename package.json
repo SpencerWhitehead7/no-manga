@@ -6,12 +6,13 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "wrangler pages dev ./dist",
     "astro": "astro",
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^7.2.0",
     "astro": "^3.1.2"
   },
   "devDependencies": {
@@ -20,6 +21,7 @@
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-simple-import-sort": "^10.0.0"
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "wrangler": "^3.9.0"
   }
 }

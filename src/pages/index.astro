@@ -1,7 +1,12 @@
 ---
 import Layout from "src/layouts/Layout.astro";
+
+console.log("homepage frontmatter ran", import.meta.env);
+
+const ssgVal = Math.random();
 ---
 
 <Layout title={undefined}>
   <h1>Homepage</h1>
+  <h2>ssgVal: {ssgVal}</h2>
 </Layout>
