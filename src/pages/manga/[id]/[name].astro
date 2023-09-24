@@ -1,0 +1,15 @@
+---
+import Layout from "src/layouts/Layout.astro";
+
+export const getStaticPaths = () => [
+  { params: { id: 1, name: "berserk" } },
+  { params: { id: 2, name: "one-piece" } },
+  { params: { id: 3, name: "genshiken" } },
+];
+
+const { id, name } = Astro.params;
+---
+
+<Layout title={name}>
+  <h1>Manga {id} - {name}</h1>
+</Layout>

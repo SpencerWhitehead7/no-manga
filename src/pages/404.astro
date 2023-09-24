@@ -1,0 +1,22 @@
+---
+import Layout from "src/layouts/Layout.astro";
+---
+
+<Layout title="Page Not Found">
+  <div>
+    <h1>404</h1>
+    <h2>There is nothing at this address</h2>
+    <h2><a href="/">Go back to home?</a></h2>
+    <h2><a href="/search">Go to search?</a></h2>
+  </div>
+</Layout>
+
+<style>
+  div {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+  }
+</style>

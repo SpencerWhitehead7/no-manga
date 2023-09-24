@@ -1,51 +1,97 @@
 ---
 interface Props {
-	title: string;
+  title: string | undefined;
 }
 
 const { title } = Astro.props;
+
+const fullTitle = title ? `no-manga - ${title}` : "no-manga";
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="description" content="Astro description" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>{title}</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Manga reader site" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{fullTitle}</title>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/search">Search</a>
+      <a href="/manga">Manga</a>
+      <a href="/mangaka">Mangaka</a>
+      <a href="/magazine">Magazine</a>
+    </nav>
+    <main>
+      <slot />
+    </main>
+  </body>
 </html>
 <style is:global>
-	:root {
-		--accent: 136, 58, 234;
-		--accent-light: 224, 204, 250;
-		--accent-dark: 49, 10, 101;
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			white 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-		background-size: 224px;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
+  :root {
+    --xs: 4px;
+    --s: 8px;
+    --m: 16px;
+    --l: 32px;
+    --xl: 64px;
+    --br: 4px;
+
+    --color-bg: #011d28;
+    --color-text: #fcf7f8;
+    --color-highlight: #51f6ee;
+    --color-highlight-warn: #ff01fb;
+    --color-black: #000000;
+
+    --screen-s: 480px;
+    --screen-m: 720px;
+    --screen-l: 1080px;
+  }
+  html {
+    font-family: system-ui, sans-serif;
+    background-color: var(--color-bg);
+  }
+
+  *,
+  *::before,
+  *::after {
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  h1,
+  h2 {
+    padding-bottom: var(--m);
+    color: var(--color-text);
+  }
+  h3,
+  h4 {
+    padding-bottom: var(--s);
+    color: var(--color-text);
+  }
+  h5,
+  h6,
+  p {
+    padding-bottom: var(--xs);
+    color: var(--color-text);
+  }
+
+  li {
+    color: var(--color-text);
+  }
+
+  a {
+    color: var(--color-highlight);
+  }
 </style>
