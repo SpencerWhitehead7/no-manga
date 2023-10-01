@@ -9,19 +9,24 @@
     "preview": "wrangler pages dev ./dist",
     "astro": "astro",
     "lint": "eslint ./src",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "generateMigrations": "drizzle-kit generate:sqlite --schema=drizzle/schema/index.ts",
+    "runMigrations": "node drizzle/scripts/runMigrations.js"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^7.2.0",
-    "astro": "^3.1.2"
+    "astro": "^3.1.2",
+    "drizzle-orm": "^0.28.6"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.2",
     "@typescript-eslint/parser": "^6.7.2",
+    "better-sqlite3": "^8.7.0",
+    "drizzle-kit": "^0.19.13",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "wrangler": "^3.9.0"
+    "wrangler": "^3.10.1"
   }
 }

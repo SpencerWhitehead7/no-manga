@@ -1,0 +1,12 @@
+PRAGMA foreign_keys = OFF;
+DROP TABLE IF EXISTS magazine_manga;
+DROP TABLE IF EXISTS manga_mangaka_job;
+DROP TABLE IF EXISTS manga_genre;
+DROP TABLE IF EXISTS magazine;
+DROP TABLE IF EXISTS mangaka;
+DROP TABLE IF EXISTS chapter;
+DROP TABLE IF EXISTS manga;
+DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS demo;
+DROP TABLE IF EXISTS job;
+PRAGMA foreign_keys = ON;

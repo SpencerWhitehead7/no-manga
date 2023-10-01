@@ -60,6 +60,12 @@ From back to front:
 - Cloudflare pages serving mixed static and SSR Astro site
 - Webtorrent serving images peer to peer (I am real excited about this bit)
 
+### Weird side effects
+
+D1 is in early-ish development and is not stable. It can only be connected to from wrangler and Cloudflare workers, although hopefully Cloudflare plans to add the ability to connect programmatically from anywhere. Because of this, to do local development and build the static site, I'm keeping 3 synced copies of the database; a filesystem db, a local wrangler copy, and a remote wrangler copy. If Cloudflare ever adds the ability to connect to D1 from outside of workers, I'll be able to do local dev and builds using the remote database and delete the other two.
+
+This would be a tremendous hassle if I was ever writing to the DB, but at this point it's read-only because I can put off writing the update tool until Cloudflare has better support. If every page was SSGed, I'd be able to ditch D1 and rely solely the filesystem DB, but because the search page needs to be SSRed, I'll eventually need a real running database.
+
 ## Logistics
 
 It will be completed very, very, very slowly in my spare time.

@@ -1,0 +1,579 @@
+{
+  "version": "5",
+  "dialect": "sqlite",
+  "id": "0406d35d-84ed-4dc7-9979-4d5afb3341e5",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "chapter": {
+      "name": "chapter",
+      "columns": {
+        "manga_id": {
+          "name": "manga_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chapter_num": {
+          "name": "chapter_num",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "page_count": {
+          "name": "page_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "idx_chapter_manga_id": {
+          "name": "idx_chapter_manga_id",
+          "columns": [
+            "manga_id"
+          ],
+          "isUnique": false
+        },
+        "idx_chapter_updated_at": {
+          "name": "idx_chapter_updated_at",
+          "columns": [
+            "updated_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "chapter_manga_id_manga_id_fk": {
+          "name": "chapter_manga_id_manga_id_fk",
+          "tableFrom": "chapter",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "manga_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chapter_manga_id_chapter_num_pk": {
+          "columns": [
+            "chapter_num",
+            "manga_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "demo": {
+      "name": "demo",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "genre": {
+      "name": "genre",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "job": {
+      "name": "job",
+      "columns": {
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "magazine": {
+      "name": "magazine",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "other_names": {
+          "name": "other_names",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "demo": {
+          "name": "demo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_magazine_name": {
+          "name": "idx_magazine_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "idx_magazine_demo": {
+          "name": "idx_magazine_demo",
+          "columns": [
+            "demo"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "magazine_demo_demo_name_fk": {
+          "name": "magazine_demo_demo_name_fk",
+          "tableFrom": "magazine",
+          "tableTo": "demo",
+          "columnsFrom": [
+            "demo"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "magazine_manga": {
+      "name": "magazine_manga",
+      "columns": {
+        "magazine_id": {
+          "name": "magazine_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "manga_id": {
+          "name": "manga_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_magazine_manga_magazine_id": {
+          "name": "idx_magazine_manga_magazine_id",
+          "columns": [
+            "magazine_id"
+          ],
+          "isUnique": false
+        },
+        "idx_magazine_manga_manga_id": {
+          "name": "idx_magazine_manga_manga_id",
+          "columns": [
+            "manga_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "magazine_manga_magazine_id_magazine_id_fk": {
+          "name": "magazine_manga_magazine_id_magazine_id_fk",
+          "tableFrom": "magazine_manga",
+          "tableTo": "magazine",
+          "columnsFrom": [
+            "magazine_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "magazine_manga_manga_id_manga_id_fk": {
+          "name": "magazine_manga_manga_id_manga_id_fk",
+          "tableFrom": "magazine_manga",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "manga_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "manga": {
+      "name": "manga",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "other_names": {
+          "name": "other_names",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "demo": {
+          "name": "demo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_manga_name": {
+          "name": "idx_manga_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        },
+        "idx_manga_demo": {
+          "name": "idx_manga_demo",
+          "columns": [
+            "demo"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "manga_demo_demo_name_fk": {
+          "name": "manga_demo_demo_name_fk",
+          "tableFrom": "manga",
+          "tableTo": "demo",
+          "columnsFrom": [
+            "demo"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "manga_genre": {
+      "name": "manga_genre",
+      "columns": {
+        "manga_id": {
+          "name": "manga_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "genre": {
+          "name": "genre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_manga_genre_manga_id": {
+          "name": "idx_manga_genre_manga_id",
+          "columns": [
+            "manga_id"
+          ],
+          "isUnique": false
+        },
+        "idx_manga_genre_genre": {
+          "name": "idx_manga_genre_genre",
+          "columns": [
+            "genre"
+          ],
+          "isUnique": false
+        },
+        "unique_manga_genre": {
+          "name": "unique_manga_genre",
+          "columns": [
+            "manga_id",
+            "genre"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "manga_genre_manga_id_manga_id_fk": {
+          "name": "manga_genre_manga_id_manga_id_fk",
+          "tableFrom": "manga_genre",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "manga_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "manga_genre_genre_genre_name_fk": {
+          "name": "manga_genre_genre_genre_name_fk",
+          "tableFrom": "manga_genre",
+          "tableTo": "genre",
+          "columnsFrom": [
+            "genre"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "manga_mangaka_job": {
+      "name": "manga_mangaka_job",
+      "columns": {
+        "manga_id": {
+          "name": "manga_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mangaka_id": {
+          "name": "mangaka_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "job": {
+          "name": "job",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_manga_mangaka_job_manga_id": {
+          "name": "idx_manga_mangaka_job_manga_id",
+          "columns": [
+            "manga_id"
+          ],
+          "isUnique": false
+        },
+        "idx_manga_mangaka_job_mangaka_id": {
+          "name": "idx_manga_mangaka_job_mangaka_id",
+          "columns": [
+            "mangaka_id"
+          ],
+          "isUnique": false
+        },
+        "unique_manga_mangaka": {
+          "name": "unique_manga_mangaka",
+          "columns": [
+            "manga_id",
+            "mangaka_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "manga_mangaka_job_manga_id_manga_id_fk": {
+          "name": "manga_mangaka_job_manga_id_manga_id_fk",
+          "tableFrom": "manga_mangaka_job",
+          "tableTo": "manga",
+          "columnsFrom": [
+            "manga_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "manga_mangaka_job_mangaka_id_mangaka_id_fk": {
+          "name": "manga_mangaka_job_mangaka_id_mangaka_id_fk",
+          "tableFrom": "manga_mangaka_job",
+          "tableTo": "mangaka",
+          "columnsFrom": [
+            "mangaka_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "manga_mangaka_job_job_job_name_fk": {
+          "name": "manga_mangaka_job_job_job_name_fk",
+          "tableFrom": "manga_mangaka_job",
+          "tableTo": "job",
+          "columnsFrom": [
+            "job"
+          ],
+          "columnsTo": [
+            "name"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "mangaka": {
+      "name": "mangaka",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "other_names": {
+          "name": "other_names",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_mangaka_name": {
+          "name": "idx_mangaka_name",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}
