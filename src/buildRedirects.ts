@@ -1,6 +1,21 @@
-// generated from DB query to redirect all manga/mangaka/magazine ID routes to id/name routes, someday
-export const buildRedirects = () => ({
-  "/mangaka/1": "/mangaka/1/kentaro-miura",
-  "/mangaka/2": "/mangaka/2/eichiro-oda",
-  "/mangaka/3": "/mangaka/3/shimoku-kio",
-});
+import { BuildTimeRepo } from "../drizzle/db/repo";
+
+const createAssetRedirects = (
+  baseRoute: string,
+  assets: { id: number; slug: string }[],
+) =>
+  assets.reduce<Record<string, string>>((redirects, { id, slug }) => {
+    redirects[`/${baseRoute}/${id}`] = `/${baseRoute}/${id}/${slug}`;
+
+    return redirects;
+  }, {});
+
+export const buildRedirects = () => {
+  const repo = new BuildTimeRepo(import.meta.env.VITE_DB_PATH);
+
+  return {
+    ...createAssetRedirects("manga", repo.getAllMangas()),
+    ...createAssetRedirects("mangaka", repo.getAllMangakas()),
+    ...createAssetRedirects("magazine", repo.getAllMagazines()),
+  };
+};
