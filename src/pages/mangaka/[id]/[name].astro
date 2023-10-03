@@ -1,15 +1,22 @@
 ---
+import { BuildTimeRepo } from "@/db/repo";
+
 import Layout from "src/layouts/Layout.astro";
 
-export const getStaticPaths = () => [
-  { params: { id: 1, name: "kentaro-miura" } },
-  { params: { id: 2, name: "eichiro-oda" } },
-  { params: { id: 3, name: "shimoku-kio" } },
-];
+export const getStaticPaths = () => {
+  const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
 
-const { id, name } = Astro.params;
+  return repo.getAllMangakas().map((mangaka) => ({
+    params: { id: mangaka.id, name: mangaka.slug },
+    props: { mangaka },
+  }));
+};
+
+const { id } = Astro.params;
+const { mangaka } = Astro.props;
 ---
 
-<Layout title={name}>
-  <h1>Mangaka {id} - {name}</h1>
+<Layout title={mangaka.name}>
+  <h1>Mangaka {id} - {mangaka.name}</h1>
+  <p>{JSON.stringify(mangaka)}</p>
 </Layout>

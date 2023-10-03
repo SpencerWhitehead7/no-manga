@@ -1,7 +1,23 @@
 ---
+import { BuildTimeRepo } from "@/db/repo";
+
+import { ROUTE } from "src/consts";
 import Layout from "src/layouts/Layout.astro";
+
+const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
+
+const magazineList = repo.getAllMagazines();
 ---
 
 <Layout title="Magazine List">
   <h1>Magazine list</h1>
+  <ul>
+    {
+      magazineList.map((magazine) => (
+        <li>
+          <a href={ROUTE.MAGAZINE(magazine)}>{JSON.stringify(magazine)}</a>
+        </li>
+      ))
+    }
+  </ul>
 </Layout>

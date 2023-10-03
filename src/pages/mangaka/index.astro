@@ -1,7 +1,23 @@
 ---
+import { BuildTimeRepo } from "@/db/repo";
+
+import { ROUTE } from "src/consts";
 import Layout from "src/layouts/Layout.astro";
+
+const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
+
+const mangakaList = repo.getAllMangakas();
 ---
 
 <Layout title="Mangaka List">
   <h1>Mangaka List</h1>
+  <ul>
+    {
+      mangakaList.map((mangaka) => (
+        <li>
+          <a href={ROUTE.MANGAKA(mangaka)}>{JSON.stringify(mangaka)}</a>
+        </li>
+      ))
+    }
+  </ul>
 </Layout>

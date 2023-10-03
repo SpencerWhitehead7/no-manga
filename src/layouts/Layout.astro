@@ -1,4 +1,6 @@
 ---
+import { ROUTE } from "src/consts";
+
 interface Props {
   title: string | undefined;
 }
@@ -19,11 +21,11 @@ const fullTitle = title ? `no-manga - ${title}` : "no-manga";
   </head>
   <body>
     <nav>
-      <a href="/">Home</a>
-      <a href="/search">Search</a>
-      <a href="/manga">Manga</a>
-      <a href="/mangaka">Mangaka</a>
-      <a href="/magazine">Magazine</a>
+      <a href={ROUTE.HOME()}>Home</a>
+      <a href={ROUTE.SEARCH()}>Search</a>
+      <a href={ROUTE.MANGA_LIST()}>Manga</a>
+      <a href={ROUTE.MANGAKA_LIST()}>Mangaka</a>
+      <a href={ROUTE.MAGAZINE_LIST()}>Magazine</a>
     </nav>
     <main>
       <slot />

@@ -1,12 +1,16 @@
 ---
+import { BuildTimeRepo } from "@/db/repo";
+
 import Layout from "src/layouts/Layout.astro";
 
-console.log("homepage frontmatter ran", import.meta.env);
+const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
 
-const ssgVal = Math.random();
+const chapterList = repo.getAllChapters();
 ---
 
 <Layout title={undefined}>
   <h1>Homepage</h1>
-  <h2>ssgVal: {ssgVal}</h2>
+  <ul>
+    {chapterList.map((chapter) => <li>{JSON.stringify(chapter)}</li>)}
+  </ul>
 </Layout>

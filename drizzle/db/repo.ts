@@ -21,18 +21,37 @@ export class BuildTimeRepo {
   }
 
   getAllMangas(): Manga[] {
-    return this.db.select().from(mangaSchema).all().map(getNameSlug);
+    return this.db
+      .select()
+      .from(mangaSchema)
+      .orderBy(mangaSchema.name)
+      .all()
+      .map(getNameSlug);
   }
 
   getAllMangakas(): Mangaka[] {
-    return this.db.select().from(mangakaSchema).all().map(getNameSlug);
+    return this.db
+      .select()
+      .from(mangakaSchema)
+      .orderBy(mangakaSchema.name)
+      .all()
+      .map(getNameSlug);
   }
 
   getAllMagazines(): Magazine[] {
-    return this.db.select().from(magazineSchema).all().map(getNameSlug);
+    return this.db
+      .select()
+      .from(magazineSchema)
+      .orderBy(magazineSchema.name)
+      .all()
+      .map(getNameSlug);
   }
 
   getAllChapters(): Chapter[] {
-    return this.db.select().from(chapterSchema).all();
+    return this.db
+      .select()
+      .from(chapterSchema)
+      .orderBy(chapterSchema.updatedAt)
+      .all();
   }
 }
