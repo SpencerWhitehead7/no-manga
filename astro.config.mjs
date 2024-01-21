@@ -7,7 +7,16 @@ import { buildRedirects } from "./src/buildRedirects";
 export default defineConfig({
   output: "hybrid",
   adapter: cloudflare({
-    runtime: "local",
+    runtime: {
+      mode: "local",
+      type: "pages",
+      persistTo: ".wrangler/state/v3",
+      bindings: {
+        DB: {
+          type: "d1",
+        },
+      },
+    },
   }),
   redirects: buildRedirects(),
 });

@@ -1,11 +1,7 @@
 ---
 export const prerender = false;
 
-import {
-  type BetterSQLite3Database,
-  drizzle as bettersqlite3Drizzle,
-} from "drizzle-orm/better-sqlite3";
-import { type DrizzleD1Database, drizzle as d1Drizzle } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/d1";
 import { sql } from "drizzle-orm";
 
 import { mangaSchema } from "@/db/schema";
@@ -17,19 +13,8 @@ console.log("search frontmatter ran", import.meta.env);
 // @ts-expect-error
 console.log("search runtime", Astro.locals.runtime);
 
-// lord, let there someday be a way to connect to D1 programatically so I can be free from this manky bullshit
-let db: BetterSQLite3Database | DrizzleD1Database;
-if (import.meta.env.DEV) {
-  const { default: Database } = await import("better-sqlite3");
-  const sqlite = new Database(import.meta.env.PUBLIC_DB_PATH);
-  db = bettersqlite3Drizzle(sqlite);
-} else if (import.meta.env.PROD) {
-  // @ts-expect-error
-  const sqlite = Astro.locals.runtime.env.DB;
-  db = d1Drizzle(sqlite);
-} else {
-  throw Error("No usable database");
-}
+// @ts-expect-error
+const db = drizzle(Astro.locals.runtime.env.DB);
 
 const searchResults = (
   await db

@@ -80,7 +80,8 @@
           "columns": [
             "chapter_num",
             "manga_id"
-          ]
+          ],
+          "name": "chapter_manga_id_chapter_num_pk"
         }
       },
       "uniqueConstraints": {}
