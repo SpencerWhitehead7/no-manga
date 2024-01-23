@@ -97,7 +97,10 @@ VALUES
 (11, 1, NULL, 19),
 (11, 2, NULL, 20),
 (12, 1, NULL, 19),
-(12, 2, NULL, 20);
+(12, 2, NULL, 20),
+(13, 1, 'Night of the Intern', 59),
+(13, 2, NULL, 26),
+(13, 3, 'The Price of 75 Years', 24);
 
 INSERT INTO genre
 VALUES
