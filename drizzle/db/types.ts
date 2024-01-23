@@ -15,3 +15,21 @@ export type Job = JobSchema;
 export type Manga = MangaSchema & { slug: string };
 export type Mangaka = MangakaSchema & { slug: string };
 export type Magazine = MagazineSchema & { slug: string };
+
+export type MangaWithJob = Manga & { job: Job };
+export type MangakaWithJob = Mangaka & { job: Job };
+
+export type FullManga = Manga & {
+  mangakas: MangakaWithJob[];
+  magazines: Magazine[];
+  chapters: Chapter[];
+  genres: Genre["name"][];
+};
+export type FullMangaka = Mangaka & {
+  mangas: Manga[];
+  magazines: Magazine[];
+};
+export type FullMagazine = Magazine & {
+  mangas: Manga[];
+  mangakas: Mangaka[];
+};

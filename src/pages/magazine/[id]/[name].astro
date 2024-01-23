@@ -6,10 +6,12 @@ import Layout from "src/layouts/Layout.astro";
 export const getStaticPaths = () => {
   const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
 
-  return repo.getAllMagazines().map((magazine) => ({
-    params: { id: magazine.id, name: magazine.slug },
-    props: { magazine },
-  }));
+  return Promise.all(
+    repo.getAllMagazines().map(async (magazine) => ({
+      params: { id: magazine.id, name: magazine.slug },
+      props: { magazine: await repo.getFullMagazine(magazine) },
+    }))
+  );
 };
 
 const { id } = Astro.params;
