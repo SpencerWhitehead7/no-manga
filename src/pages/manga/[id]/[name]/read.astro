@@ -1,0 +1,147 @@
+---
+export const prerender = false;
+
+import { drizzle } from "drizzle-orm/d1";
+import { and, eq, gte, lte } from "drizzle-orm";
+
+import { chapterSchema, mangaSchema } from "@/db/schema";
+
+import { ROUTE } from "src/consts";
+import Layout from "src/layouts/Layout.astro";
+import { getNameSlug } from "src/utils";
+
+// @ts-expect-error
+const db = drizzle(Astro.locals.runtime.env.DB);
+
+const { id } = Astro.params;
+const [manga] = (
+  await db
+    .selectDistinct()
+    .from(mangaSchema)
+    .where(eq(mangaSchema.id, Number(id)))
+).map(getNameSlug);
+if (!manga) {
+  return Astro.redirect(ROUTE.MANGA_LIST());
+}
+
+const chapterNum = Number(Astro.url.searchParams.get("chapter"));
+if (!chapterNum) {
+  return Astro.redirect(ROUTE.MANGA_READ(manga));
+}
+const pageNum = Number(Astro.url.searchParams.get("page"));
+if (!pageNum) {
+  return Astro.redirect(ROUTE.MANGA_READ(manga, chapterNum));
+}
+
+const possibleChapters = await db
+  .select()
+  .from(chapterSchema)
+  .where(
+    and(
+      eq(chapterSchema.mangaId, Number(id)),
+      gte(chapterSchema.chapterNum, chapterNum - 1),
+      lte(chapterSchema.chapterNum, chapterNum + 1)
+    )
+  )
+  .orderBy(chapterSchema.chapterNum);
+const chapterIdx = possibleChapters.findIndex(
+  (c) => c.chapterNum === chapterNum
+);
+const chapter = possibleChapters[chapterIdx];
+const prevChapter = possibleChapters[chapterIdx - 1];
+const nextChapter = possibleChapters[chapterIdx + 1];
+if (!chapter) {
+  return Astro.redirect(ROUTE.MANGA(manga));
+}
+
+const title = `${manga.name} chapter ${chapterNum} page ${pageNum}`;
+
+const src = ROUTE.MANGA_READ_SRC(manga, chapterNum, pageNum);
+
+const isFirstChapter = prevChapter === undefined;
+const isFirstPage = pageNum === 1;
+const prevLink =
+  isFirstChapter && isFirstPage
+    ? ROUTE.MANGA(manga)
+    : ROUTE.MANGA_READ(
+        manga,
+        isFirstPage ? prevChapter!.chapterNum : chapterNum,
+        isFirstPage ? prevChapter!.pageCount : pageNum - 1
+      );
+const prevSrc =
+  isFirstChapter && isFirstPage
+    ? null
+    : ROUTE.MANGA_READ_SRC(
+        manga,
+        isFirstPage ? prevChapter!.chapterNum : chapterNum,
+        isFirstPage ? prevChapter!.pageCount : pageNum - 1
+      );
+
+const isLastChapter = nextChapter === undefined;
+const isLastPage = pageNum === chapter.pageCount;
+const nextLink =
+  isLastChapter && isLastPage
+    ? ROUTE.MANGA(manga)
+    : ROUTE.MANGA_READ(
+        manga,
+        isLastPage ? nextChapter!.chapterNum : chapterNum,
+        isLastPage ? 1 : pageNum + 1
+      );
+const nextSrc =
+  isLastChapter && isLastPage
+    ? null
+    : ROUTE.MANGA_READ_SRC(
+        manga,
+        isLastPage ? nextChapter!.chapterNum : chapterNum,
+        isLastPage ? 1 : pageNum + 1
+      );
+---
+
+<Layout title={title}>
+  <div class="page-container">
+    <img src={src} alt={title} class="page-image" />
+  </div>
+
+  <div class="links-container">
+    <a href={nextLink} class="link link--next" data-astro-prefetch="none"></a>
+    <a href={prevLink} class="link link--prev" data-astro-prefetch="none"></a>
+  </div>
+
+  {nextLink && <link rel="prefetch" id="nextLink" href={nextLink} />}
+  {nextSrc && <link rel="prefetch" id="nextSrc" href={nextSrc} />}
+  {prevLink && <link rel="prefetch" id="prevLink" href={prevLink} />}
+  {prevSrc && <link rel="prefetch" id="prevSrc" href={prevSrc} />}
+</Layout>
+
+<style lang="scss">
+  .page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100%;
+  }
+
+  .links-container {
+    display: flex;
+    min-height: 100%;
+    position: relative;
+    top: -100%;
+    z-index: 1;
+  }
+
+  .page-image {
+    object-fit: contain;
+  }
+
+  .link {
+    height: 100%;
+
+    &--next {
+      width: 60%;
+    }
+
+    &--prev {
+      width: 40%;
+    }
+  }
+</style>

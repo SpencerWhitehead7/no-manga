@@ -110,6 +110,10 @@ const fullTitle = title ? `no-manga - ${title}` : "no-manga";
 <style lang="scss">
   .nav {
     height: 0;
+
+    & > * {
+      z-index: 8;
+    }
   }
 
   #nav__toggle {
@@ -137,7 +141,7 @@ const fullTitle = title ? `no-manga - ${title}` : "no-manga";
     left: var(--s);
     width: var(--l);
     height: var(--l);
-    z-index: 1;
+    z-index: 9 !important;
     cursor: pointer;
 
     @media (min-width: 1080px) {
