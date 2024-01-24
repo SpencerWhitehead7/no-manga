@@ -113,6 +113,28 @@ const nextSrc =
   {prevSrc && <link rel="prefetch" id="prevSrc" href={prevSrc} />}
 </Layout>
 
+<script>
+  import { navigate } from "astro:transitions/client";
+
+  const nextLink = (document.getElementById("nextLink") as HTMLLinkElement)
+    .href;
+  const prevLink = (document.getElementById("prevLink") as HTMLLinkElement)
+    .href;
+
+  document.addEventListener("keydown", (e) => {
+    console.log(e);
+
+    switch (e.code) {
+      case "ArrowLeft":
+        navigate(nextLink);
+        return;
+      case "ArrowRight":
+        navigate(prevLink);
+        return;
+    }
+  });
+</script>
+
 <style lang="scss">
   .page-container {
     display: flex;
