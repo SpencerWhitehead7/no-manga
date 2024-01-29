@@ -2,13 +2,14 @@
 export const prerender = false;
 
 import { drizzle } from "drizzle-orm/d1";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { chapterSchema, mangaSchema } from "@/db/schema";
 
 import { ROUTE } from "src/consts";
 import Layout from "src/layouts/Layout.astro";
-import { getNameSlug } from "src/utils";
+import { getNextPageInfo, getPrevPageInfo, getTitle } from "src/readPage";
+import { getItemAndAdjacents, getNameSlug } from "src/utils";
 
 // @ts-expect-error
 const db = drizzle(Astro.locals.runtime.env.DB);
@@ -33,103 +34,237 @@ if (!pageNum) {
   return Astro.redirect(ROUTE.MANGA_READ(manga, chapterNum));
 }
 
-const possibleChapters = await db
+const chapters = await db
   .select()
   .from(chapterSchema)
-  .where(
-    and(
-      eq(chapterSchema.mangaId, Number(id)),
-      gte(chapterSchema.chapterNum, chapterNum - 1),
-      lte(chapterSchema.chapterNum, chapterNum + 1)
-    )
-  )
+  .where(eq(chapterSchema.mangaId, Number(id)))
   .orderBy(chapterSchema.chapterNum);
-const chapterIdx = possibleChapters.findIndex(
+const [prevChapter, chapter, nextChapter] = getItemAndAdjacents(
+  chapters,
   (c) => c.chapterNum === chapterNum
 );
-const chapter = possibleChapters[chapterIdx];
-const prevChapter = possibleChapters[chapterIdx - 1];
-const nextChapter = possibleChapters[chapterIdx + 1];
 if (!chapter) {
   return Astro.redirect(ROUTE.MANGA(manga));
 }
 
-const title = `${manga.name} chapter ${chapterNum} page ${pageNum}`;
+const title = getTitle(manga, chapterNum, pageNum);
 
 const src = ROUTE.MANGA_READ_SRC(manga, chapterNum, pageNum);
 
-const isFirstChapter = prevChapter === undefined;
-const isFirstPage = pageNum === 1;
-const prevLink =
-  isFirstChapter && isFirstPage
-    ? ROUTE.MANGA(manga)
-    : ROUTE.MANGA_READ(
-        manga,
-        isFirstPage ? prevChapter!.chapterNum : chapterNum,
-        isFirstPage ? prevChapter!.pageCount : pageNum - 1
-      );
-const prevSrc =
-  isFirstChapter && isFirstPage
-    ? null
-    : ROUTE.MANGA_READ_SRC(
-        manga,
-        isFirstPage ? prevChapter!.chapterNum : chapterNum,
-        isFirstPage ? prevChapter!.pageCount : pageNum - 1
-      );
+const { prevLink, prevSrc } = getPrevPageInfo(
+  manga,
+  pageNum,
+  chapter,
+  prevChapter
+);
 
-const isLastChapter = nextChapter === undefined;
-const isLastPage = pageNum === chapter.pageCount;
-const nextLink =
-  isLastChapter && isLastPage
-    ? ROUTE.MANGA(manga)
-    : ROUTE.MANGA_READ(
-        manga,
-        isLastPage ? nextChapter!.chapterNum : chapterNum,
-        isLastPage ? 1 : pageNum + 1
-      );
-const nextSrc =
-  isLastChapter && isLastPage
-    ? null
-    : ROUTE.MANGA_READ_SRC(
-        manga,
-        isLastPage ? nextChapter!.chapterNum : chapterNum,
-        isLastPage ? 1 : pageNum + 1
-      );
+const { nextLink, nextSrc } = getNextPageInfo(
+  manga,
+  pageNum,
+  chapter,
+  nextChapter
+);
+
+const chapterNums = chapters.map((c) => c.chapterNum);
+const chapterPageCounts = chapters.map((c) => c.pageCount);
 ---
 
 <Layout title={title}>
-  <div class="page-container">
-    <img src={src} alt={title} class="page-image" />
+  <div id="page-container" class="page-container">
+    <img id="page-image" src={src} alt={title} class="page-image" />
   </div>
 
-  <div class="links-container">
-    <a href={nextLink} class="link link--next" data-astro-prefetch="none"></a>
-    <a href={prevLink} class="link link--prev" data-astro-prefetch="none"></a>
+  <div id="links-container" class="links-container">
+    <a
+      id="link-next"
+      href={nextLink}
+      class="link link--next"
+      data-astro-prefetch="none"></a>
+    <a
+      id="link-prev"
+      href={prevLink}
+      class="link link--prev"
+      data-astro-prefetch="none"></a>
   </div>
 
-  {nextLink && <link rel="prefetch" id="nextLink" href={nextLink} />}
-  {nextSrc && <link rel="prefetch" id="nextSrc" href={nextSrc} />}
-  {prevLink && <link rel="prefetch" id="prevLink" href={prevLink} />}
-  {prevSrc && <link rel="prefetch" id="prevSrc" href={prevSrc} />}
+  <div
+    id="paginationInfo"
+    data-manga={JSON.stringify(manga)}
+    data-chapter-nums={chapterNums}
+    data-chapter-page-counts={chapterPageCounts}
+  >
+    {nextLink && <link rel="prefetch" id="nextLink" href={nextLink} />}
+    {nextSrc && <link rel="prefetch" id="nextSrc" href={nextSrc} />}
+    {prevLink && <link rel="prefetch" id="prevLink" href={prevLink} />}
+    {prevSrc && <link rel="prefetch" id="prevSrc" href={prevSrc} />}
+  </div>
 </Layout>
 
 <script>
+  import type { Manga } from "@/db/types";
   import { navigate } from "astro:transitions/client";
 
-  const nextLink = (document.getElementById("nextLink") as HTMLLinkElement)
-    .href;
-  const prevLink = (document.getElementById("prevLink") as HTMLLinkElement)
-    .href;
+  import { ROUTE } from "src/consts";
+  import {
+    getNextPageInfo,
+    getNextPlaceInManga,
+    getPlaceInManga,
+    getPrevPageInfo,
+    getPrevPlaceInManga,
+    getTitle,
+  } from "src/readPage";
+  import { getItemAndAdjacents } from "src/utils";
+
+  const {
+    manga: mangaRaw,
+    chapterNums: chapterNumsRaw,
+    chapterPageCounts: chapterPageCountsRaw,
+  } = document.getElementById("paginationInfo")?.dataset ?? {};
+  const manga = JSON.parse(mangaRaw ?? "{}") as Manga;
+  const chapterNums = (chapterNumsRaw ?? "").split(",").map(Number);
+  const chapterPageCounts = (chapterPageCountsRaw ?? "").split(",").map(Number);
+  const chapters = chapterNums.map((chapterNum, i) => ({
+    chapterNum,
+    pageCount: chapterPageCounts[i]!,
+  }));
+  // unfortunately, with astro viewTransitions enabled, there's no convenient way
+  // to add and remove document level key listeners based on navigation
+  // so instead you can just noop them on other routes
+  const IS_ON_READER_ROUTE_REGEX = /\/manga\/(\d+)\/.*\/read\?.*/;
+
+  const navigateNext = () => {
+    document.getElementById("page-image")?.remove();
+
+    const { chapterNum, pageNum } = getPlaceInManga(document.URL);
+    const [_, chapter, nextChapter] = getItemAndAdjacents(
+      chapters,
+      (c) => c.chapterNum === chapterNum
+    );
+
+    const { isLastChapter, isLastPage, nextLink } = getNextPageInfo(
+      manga,
+      pageNum,
+      chapter!,
+      nextChapter
+    );
+
+    if (isLastChapter && isLastPage) {
+      navigate(nextLink);
+    } else {
+      history.pushState({}, "", nextLink);
+      document.title = getTitle(
+        manga,
+        ...getNextPlaceInManga(isLastPage, nextChapter!, chapter!, pageNum)
+      );
+    }
+  };
+
+  const navigatePrev = () => {
+    document.getElementById("page-image")?.remove();
+
+    const { chapterNum, pageNum } = getPlaceInManga(document.URL);
+    const [prevChapter, chapter, _] = getItemAndAdjacents(
+      chapters,
+      (c) => c.chapterNum === chapterNum
+    );
+
+    const { isFirstChapter, isFirstPage, prevLink } = getPrevPageInfo(
+      manga,
+      pageNum,
+      chapter!,
+      prevChapter
+    );
+    if (isFirstChapter && isFirstPage) {
+      navigate(prevLink);
+    } else {
+      history.pushState({}, "", prevLink);
+      document.title = getTitle(
+        manga,
+        ...getPrevPlaceInManga(isFirstPage, prevChapter!, chapter!, pageNum)
+      );
+    }
+  };
+
+  const hasNavigated = () => {
+    const { chapterNum, pageNum } = getPlaceInManga(document.URL);
+    const [prevChapter, chapter, nextChapter] = getItemAndAdjacents(
+      chapters,
+      (c) => c.chapterNum === chapterNum
+    );
+
+    const img = new Image();
+    img.id = "page-image";
+    img.src = ROUTE.MANGA_READ_SRC(manga, chapterNum, pageNum);
+    img.alt = getTitle(manga, chapterNum, pageNum);
+    img.className = "page-image";
+    document.getElementById("page-container")?.appendChild(img);
+
+    img.onload = () => {
+      const { nextSrc } = getNextPageInfo(
+        manga,
+        pageNum,
+        chapter!,
+        nextChapter
+      );
+      const { prevSrc } = getPrevPageInfo(
+        manga,
+        pageNum,
+        chapter!,
+        prevChapter
+      );
+
+      if (nextSrc) {
+        const nextImg = new Image();
+        nextImg.src = nextSrc;
+
+        nextImg.onload = () => {
+          if (prevSrc) new Image().src = prevSrc;
+        };
+      } else if (prevSrc) new Image().src = prevSrc;
+    };
+  };
+
+  const createNavBtn = (widthPercent: number, navigateCb: VoidFunction) => {
+    const btn = document.createElement("button");
+    btn.style.height = "100%";
+    btn.style.width = `${widthPercent}%`;
+    btn.style.opacity = "0";
+    btn.onclick = () => {
+      navigateCb();
+      hasNavigated();
+    };
+
+    return btn;
+  };
+
+  const linksContainer = document.getElementById("links-container");
+  document.getElementById("link-next")?.remove();
+  linksContainer?.appendChild(createNavBtn(40, navigateNext));
+  document.getElementById("link-prev")?.remove();
+  linksContainer?.appendChild(createNavBtn(60, navigatePrev));
 
   document.addEventListener("keydown", (e) => {
-    console.log(e);
+    if (!IS_ON_READER_ROUTE_REGEX.test(document.URL)) return;
+
+    switch (e.code) {
+      case "ArrowLeft": {
+        navigateNext();
+        return;
+      }
+      case "ArrowRight": {
+        navigatePrev();
+        return;
+      }
+    }
+  });
+
+  document.addEventListener("keyup", (e) => {
+    if (!IS_ON_READER_ROUTE_REGEX.test(document.URL)) return;
 
     switch (e.code) {
       case "ArrowLeft":
-        navigate(nextLink);
-        return;
       case "ArrowRight":
-        navigate(prevLink);
+        hasNavigated();
         return;
     }
   });
