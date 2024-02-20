@@ -69,3 +69,24 @@ This would be a tremendous hassle if I was ever writing to the DB, but at this p
 ## Logistics
 
 It will be completed very, very, very slowly in my spare time.
+
+// slap on some playwright?
+
+// real search functionality (pass in your params for search by manga, mangaka, magazine, all three)
+// quicksearch functionality in the nav
+// series title, chapterNum, chapterName, pageNum displayed on reader
+// chapterNum and pageNum selectors on reader - or in nav, but only if you're on that page
+// uhhh get either cloudflare or astro's image optimization stuff working - i kinda dislike the idea of junking up this whole repo with zillions of images but uploading them into cloudflare's kinda nice
+// make pretty
+
+// webtorrents!!!
+
+// images for magazines, mangaka, manga
+// paginate / breakdown by letter for list pages
+// infinite scroll or pagination for landing page
+// more sophisticated search functionality
+
+// make CLI to interact with DB and upload pages
+
+add a css transition animation to the page elements in spa nav mode
+matched with the slide animation with appropriate direction in mpa mode
