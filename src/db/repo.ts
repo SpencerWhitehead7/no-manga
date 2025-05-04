@@ -1,10 +1,9 @@
-import Database from "better-sqlite3";
 import { eq } from "drizzle-orm";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import type { AnyD1Database, DrizzleD1Database } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/d1";
 
-import { getNameSlug } from "../../src/utils";
-import * as schema from "../schema";
+import * as schema from "../../drizzle/schema";
+import { getNameSlug } from "../utils";
 import {
   chapterSchema,
   magazineMangaSchema,
@@ -28,40 +27,52 @@ import type {
   MangaWithJob,
 } from "./types";
 
-export class BuildTimeRepo {
-  private db: BetterSQLite3Database<typeof schema>;
+export class Repo {
+  private db: DrizzleD1Database<typeof schema>;
 
-  constructor(dbPath: string) {
-    const sqlite = new Database(dbPath, { fileMustExist: true });
-    this.db = drizzle(sqlite, { schema });
+  constructor(d1Db: AnyD1Database) {
+    this.db = drizzle(d1Db, { schema });
   }
 
-  getAllMangas(): Manga[] {
+  getAllMangas(): Promise<Manga[]> {
     return this.db
       .select()
       .from(mangaSchema)
       .orderBy(mangaSchema.name)
       .all()
-      .map(getNameSlug);
+      .then((allMangas) => allMangas.map(getNameSlug));
   }
 
-  async getFullManga(manga: Manga): Promise<FullManga> {
-    const [mangakas, magazines, chapters, genres] = await Promise.all([
-      this.getMangakasByManga(manga),
-      this.getMagazinesByManga(manga),
-      this.getChaptersByManga(manga),
-      this.getGenresByManga(manga),
+  getManga(id: number): Promise<Manga | null> {
+    return this.db
+      .select()
+      .from(mangaSchema)
+      .where(eq(mangaSchema.id, id))
+      .get()
+      .then((manga) => (manga ? getNameSlug(manga) : null));
+  }
+
+  async getFullManga(id: number): Promise<FullManga | null> {
+    const [manga, mangakas, magazines, chapters, genres] = await Promise.all([
+      this.getManga(id),
+      this.getMangakasByManga(id),
+      this.getMagazinesByManga(id),
+      this.getChaptersByManga(id),
+      this.getGenresByManga(id),
     ]);
 
-    return {
-      ...manga,
-      mangakas,
-      magazines,
-      chapters,
-      genres,
-    };
+    return manga
+      ? {
+          ...manga,
+          mangakas,
+          magazines,
+          chapters,
+          genres,
+        }
+      : null;
   }
-  private getMangakasByManga(manga: Manga): Promise<MangakaWithJob[]> {
+
+  private getMangakasByManga(id: number): Promise<MangakaWithJob[]> {
     return this.db
       .selectDistinct()
       .from(mangaMangakaJobSchema)
@@ -69,7 +80,7 @@ export class BuildTimeRepo {
         mangakaSchema,
         eq(mangaMangakaJobSchema.mangakaId, mangakaSchema.id),
       )
-      .where(eq(mangaMangakaJobSchema.mangaId, manga.id))
+      .where(eq(mangaMangakaJobSchema.mangaId, id))
       .orderBy(mangakaSchema.name)
       .then((rows) =>
         rows
@@ -80,7 +91,8 @@ export class BuildTimeRepo {
           .map(getNameSlug),
       );
   }
-  private getMagazinesByManga(manga: Manga): Promise<Magazine[]> {
+
+  private getMagazinesByManga(id: number): Promise<Magazine[]> {
     return this.db
       .selectDistinct()
       .from(magazineMangaSchema)
@@ -88,53 +100,68 @@ export class BuildTimeRepo {
         magazineSchema,
         eq(magazineMangaSchema.magazineId, magazineSchema.id),
       )
-      .where(eq(magazineMangaSchema.mangaId, manga.id))
+      .where(eq(magazineMangaSchema.mangaId, id))
       .orderBy(magazineSchema.name)
       .then((rows) => rows.map((row) => row.magazine).map(getNameSlug));
   }
-  private getChaptersByManga(manga: Manga): Promise<Chapter[]> {
+
+  private getChaptersByManga(id: number): Promise<Chapter[]> {
     return this.db
       .select()
       .from(chapterSchema)
-      .orderBy(chapterSchema.chapterNum)
-      .where(eq(chapterSchema.mangaId, manga.id));
+      .where(eq(chapterSchema.mangaId, id))
+      .orderBy(chapterSchema.chapterNum);
   }
-  private getGenresByManga(manga: Manga): Promise<Genre["name"][]> {
+
+  private getGenresByManga(id: number): Promise<Genre["name"][]> {
     return this.db
       .selectDistinct()
       .from(mangaGenreSchema)
-      .where(eq(mangaGenreSchema.mangaId, manga.id))
+      .where(eq(mangaGenreSchema.mangaId, id))
       .orderBy(mangaGenreSchema.genre)
       .then((rows) => rows.map((row) => row.genre));
   }
 
-  getAllMangakas(): Mangaka[] {
+  getAllMangakas(): Promise<Mangaka[]> {
     return this.db
       .select()
       .from(mangakaSchema)
       .orderBy(mangakaSchema.name)
       .all()
-      .map(getNameSlug);
+      .then((allMangakas) => allMangakas.map(getNameSlug));
   }
 
-  async getFullMangaka(mangaka: Mangaka): Promise<FullMangaka> {
-    const [mangas, magazines] = await Promise.all([
-      this.getMangasByMangaka(mangaka),
-      this.getMagazinesByMangaka(mangaka),
+  getMangaka(id: number): Promise<Mangaka | null> {
+    return this.db
+      .select()
+      .from(mangakaSchema)
+      .where(eq(mangakaSchema.id, id))
+      .get()
+      .then((mangaka) => (mangaka ? getNameSlug(mangaka) : null));
+  }
+
+  async getFullMangaka(id: number): Promise<FullMangaka | null> {
+    const [mangaka, mangas, magazines] = await Promise.all([
+      this.getMangaka(id),
+      this.getMangasByMangaka(id),
+      this.getMagazinesByMangaka(id),
     ]);
 
-    return {
-      ...mangaka,
-      mangas,
-      magazines,
-    };
+    return mangaka
+      ? {
+          ...mangaka,
+          mangas,
+          magazines,
+        }
+      : null;
   }
-  private getMangasByMangaka(mangaka: Mangaka): Promise<MangaWithJob[]> {
+
+  private getMangasByMangaka(id: number): Promise<MangaWithJob[]> {
     return this.db
       .selectDistinct()
       .from(mangaMangakaJobSchema)
       .innerJoin(mangaSchema, eq(mangaMangakaJobSchema.mangaId, mangaSchema.id))
-      .where(eq(mangaMangakaJobSchema.mangakaId, mangaka.id))
+      .where(eq(mangaMangakaJobSchema.mangakaId, id))
       .orderBy(mangaSchema.name)
       .then((rows) =>
         rows
@@ -145,7 +172,8 @@ export class BuildTimeRepo {
           .map(getNameSlug),
       );
   }
-  private getMagazinesByMangaka(mangaka: Mangaka): Promise<Magazine[]> {
+
+  private getMagazinesByMangaka(id: number): Promise<Magazine[]> {
     return this.db
       .selectDistinct()
       .from(mangaMangakaJobSchema)
@@ -158,42 +186,56 @@ export class BuildTimeRepo {
         magazineSchema,
         eq(magazineMangaSchema.magazineId, magazineSchema.id),
       )
-      .where(eq(mangaMangakaJobSchema.mangakaId, mangaka.id))
+      .where(eq(mangaMangakaJobSchema.mangakaId, id))
       .orderBy(magazineSchema.name)
       .then((rows) => rows.map((row) => row.magazine).map(getNameSlug));
   }
 
-  getAllMagazines(): Magazine[] {
+  getAllMagazines(): Promise<Magazine[]> {
     return this.db
       .select()
       .from(magazineSchema)
       .orderBy(magazineSchema.name)
       .all()
-      .map(getNameSlug);
+      .then((allMagazines) => allMagazines.map(getNameSlug));
   }
 
-  async getFullMagazine(magazine: Magazine): Promise<FullMagazine> {
-    const [mangas, mangakas] = await Promise.all([
-      this.getMangasByMagazine(magazine),
-      this.getMangakasByMagazine(magazine),
+  getMagazine(id: number): Promise<Magazine | null> {
+    return this.db
+      .select()
+      .from(magazineSchema)
+      .where(eq(magazineSchema.id, id))
+      .get()
+      .then((magazine) => (magazine ? getNameSlug(magazine) : null));
+  }
+
+  async getFullMagazine(id: number): Promise<FullMagazine | null> {
+    const [magazine, mangas, mangakas] = await Promise.all([
+      this.getMagazine(id),
+      this.getMangasByMagazine(id),
+      this.getMangakasByMagazine(id),
     ]);
 
-    return {
-      ...magazine,
-      mangas,
-      mangakas,
-    };
+    return magazine
+      ? {
+          ...magazine,
+          mangas,
+          mangakas,
+        }
+      : null;
   }
-  private getMangasByMagazine(magazine: Magazine): Promise<Manga[]> {
+
+  private getMangasByMagazine(id: number): Promise<Manga[]> {
     return this.db
       .selectDistinct()
       .from(magazineMangaSchema)
       .innerJoin(mangaSchema, eq(magazineMangaSchema.mangaId, mangaSchema.id))
-      .where(eq(magazineMangaSchema.magazineId, magazine.id))
+      .where(eq(magazineMangaSchema.magazineId, id))
       .orderBy(mangaSchema.name)
       .then((rows) => rows.map((row) => row.manga).map(getNameSlug));
   }
-  private getMangakasByMagazine(magazine: Magazine): Promise<MangakaWithJob[]> {
+
+  private getMangakasByMagazine(id: number): Promise<MangakaWithJob[]> {
     return this.db
       .selectDistinct()
       .from(magazineMangaSchema)
@@ -206,7 +248,7 @@ export class BuildTimeRepo {
         mangakaSchema,
         eq(mangaMangakaJobSchema.mangakaId, mangakaSchema.id),
       )
-      .where(eq(magazineMangaSchema.magazineId, magazine.id))
+      .where(eq(magazineMangaSchema.magazineId, id))
       .orderBy(mangakaSchema.name)
       .then((rows) =>
         rows
@@ -218,7 +260,7 @@ export class BuildTimeRepo {
       );
   }
 
-  getAllChapters(): Chapter[] {
+  getAllChapters(): Promise<Chapter[]> {
     return this.db
       .select()
       .from(chapterSchema)

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/db/*": ["drizzle/db/*"]
+      "@/db/*": ["src/db/*"]
     }
   }
 }

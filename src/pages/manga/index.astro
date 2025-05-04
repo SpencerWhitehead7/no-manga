@@ -1,12 +1,12 @@
 ---
-import { BuildTimeRepo } from "@/db/repo";
+import { Repo } from "@/db/repo";
 
 import { ROUTE } from "src/consts";
 import Layout from "src/layouts/Layout.astro";
 
-const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
+const repo = new Repo(Astro.locals.runtime.env.DB);
 
-const mangaList = repo.getAllMangas();
+const mangaList = await repo.getAllMangas();
 ---
 
 <Layout title="Manga List">

@@ -1,12 +1,6 @@
-/// <reference types="astro/client" />
+type Runtime = import("@astrojs/cloudflare").Runtime<Env>;
 
-interface ImportMetaEnv {
-  // only in build files
-  readonly VITE_DB_PATH: string;
-  // only in astro files
-  readonly PUBLIC_DB_PATH: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+declare namespace App {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
+  interface Locals extends Runtime {}
 }

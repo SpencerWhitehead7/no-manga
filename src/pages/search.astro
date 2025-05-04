@@ -1,19 +1,12 @@
 ---
-export const prerender = false;
-
-import { drizzle } from "drizzle-orm/d1";
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/d1";
 
 import { mangaSchema } from "@/db/schema";
 
 import Layout from "src/layouts/Layout.astro";
 import { getNameSlug } from "src/utils";
 
-console.log("search frontmatter ran", import.meta.env);
-// @ts-expect-error
-console.log("search runtime", Astro.locals.runtime);
-
-// @ts-expect-error
 const db = drizzle(Astro.locals.runtime.env.DB);
 
 const searchResults = (
@@ -21,7 +14,7 @@ const searchResults = (
     .select()
     .from(mangaSchema)
     .where(
-      sql`LOWER(${mangaSchema.name}) like ${"%" + "K".toLowerCase() + "%"}`
+      sql`LOWER(${mangaSchema.name}) like ${"%" + "K".toLowerCase() + "%"}`,
     )
     .all()
 ).map(getNameSlug);

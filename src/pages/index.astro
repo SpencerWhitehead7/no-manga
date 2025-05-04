@@ -1,11 +1,11 @@
 ---
-import { BuildTimeRepo } from "@/db/repo";
+import { Repo } from "@/db/repo";
 
 import Layout from "src/layouts/Layout.astro";
 
-const repo = new BuildTimeRepo(import.meta.env.PUBLIC_DB_PATH);
+const repo = new Repo(Astro.locals.runtime.env.DB);
 
-const chapterList = repo.getAllChapters();
+const chapterList = await repo.getAllChapters();
 ---
 
 <Layout title={undefined}>

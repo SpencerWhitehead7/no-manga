@@ -1,28 +1,19 @@
 ---
-export const prerender = false;
-
-import { drizzle } from "drizzle-orm/d1";
-import { eq } from "drizzle-orm";
-
-import { chapterSchema, mangaSchema } from "@/db/schema";
+import { Repo } from "@/db/repo";
 
 import { ROUTE } from "src/consts";
 import Layout from "src/layouts/Layout.astro";
 import { getNextPageInfo, getPrevPageInfo, getTitle } from "src/readPage";
-import { getItemAndAdjacents, getNameSlug } from "src/utils";
-
-// @ts-expect-error
-const db = drizzle(Astro.locals.runtime.env.DB);
+import { getItemAndAdjacents } from "src/utils";
 
 const { id } = Astro.params;
-const [manga] = (
-  await db
-    .selectDistinct()
-    .from(mangaSchema)
-    .where(eq(mangaSchema.id, Number(id)))
-).map(getNameSlug);
+const repo = new Repo(Astro.locals.runtime.env.DB);
+
+const manga = await repo.getFullManga(Number(id));
 if (!manga) {
-  return Astro.redirect(ROUTE.MANGA_LIST());
+  Astro.response.status = 404;
+  Astro.response.statusText = "Manga not found";
+  return Astro.rewrite("/404");
 }
 
 const chapterNum = Number(Astro.url.searchParams.get("chapter"));
@@ -34,17 +25,15 @@ if (!pageNum) {
   return Astro.redirect(ROUTE.MANGA_READ(manga, chapterNum));
 }
 
-const chapters = await db
-  .select()
-  .from(chapterSchema)
-  .where(eq(chapterSchema.mangaId, Number(id)))
-  .orderBy(chapterSchema.chapterNum);
 const [prevChapter, chapter, nextChapter] = getItemAndAdjacents(
-  chapters,
-  (c) => c.chapterNum === chapterNum
+  manga.chapters,
+  (c) => c.chapterNum === chapterNum,
 );
 if (!chapter) {
   return Astro.redirect(ROUTE.MANGA(manga));
+}
+if (pageNum < 1 || pageNum > chapter.pageCount) {
+  return Astro.redirect(ROUTE.MANGA_READ(manga, chapterNum));
 }
 
 const title = getTitle(manga, chapterNum, pageNum);
@@ -55,18 +44,15 @@ const { prevLink, prevSrc } = getPrevPageInfo(
   manga,
   pageNum,
   chapter,
-  prevChapter
+  prevChapter,
 );
 
 const { nextLink, nextSrc } = getNextPageInfo(
   manga,
   pageNum,
   chapter,
-  nextChapter
+  nextChapter,
 );
-
-const chapterNums = chapters.map((c) => c.chapterNum);
-const chapterPageCounts = chapters.map((c) => c.pageCount);
 ---
 
 <Layout title={title}>
@@ -87,12 +73,7 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
       data-astro-prefetch="none"></a>
   </div>
 
-  <div
-    id="paginationInfo"
-    data-manga={JSON.stringify(manga)}
-    data-chapter-nums={chapterNums}
-    data-chapter-page-counts={chapterPageCounts}
-  >
+  <div id="paginationInfo" data-manga={JSON.stringify(manga)}>
     {nextLink && <link rel="prefetch" id="nextLink" href={nextLink} />}
     {nextSrc && <link rel="prefetch" id="nextSrc" href={nextSrc} />}
     {prevLink && <link rel="prefetch" id="prevLink" href={prevLink} />}
@@ -101,7 +82,7 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
 </Layout>
 
 <script>
-  import type { Manga } from "@/db/types";
+  import type { FullManga } from "@/db/types";
   import { navigate } from "astro:transitions/client";
 
   import { ROUTE } from "src/consts";
@@ -115,37 +96,29 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
   } from "src/readPage";
   import { getItemAndAdjacents } from "src/utils";
 
-  const {
-    manga: mangaRaw,
-    chapterNums: chapterNumsRaw,
-    chapterPageCounts: chapterPageCountsRaw,
-  } = document.getElementById("paginationInfo")?.dataset ?? {};
-  const manga = JSON.parse(mangaRaw ?? "{}") as Manga;
-  const chapterNums = (chapterNumsRaw ?? "").split(",").map(Number);
-  const chapterPageCounts = (chapterPageCountsRaw ?? "").split(",").map(Number);
-  const chapters = chapterNums.map((chapterNum, i) => ({
-    chapterNum,
-    pageCount: chapterPageCounts[i]!,
-  }));
+  const { manga: mangaRaw } =
+    document.getElementById("paginationInfo")?.dataset ?? {};
+  const manga = JSON.parse(mangaRaw ?? "{}") as FullManga;
   // unfortunately, with astro viewTransitions enabled, there's no convenient way
   // to add and remove document level key listeners based on navigation
   // so instead you can just noop them on other routes
   const IS_ON_READER_ROUTE_REGEX = /\/manga\/(\d+)\/.*\/read\?.*/;
+  console.log(manga);
 
   const navigateNext = () => {
     document.getElementById("page-image")?.remove();
 
     const { chapterNum, pageNum } = getPlaceInManga(document.URL);
     const [_, chapter, nextChapter] = getItemAndAdjacents(
-      chapters,
-      (c) => c.chapterNum === chapterNum
+      manga.chapters,
+      (c) => c.chapterNum === chapterNum,
     );
 
     const { isLastChapter, isLastPage, nextLink } = getNextPageInfo(
       manga,
       pageNum,
       chapter!,
-      nextChapter
+      nextChapter,
     );
 
     if (isLastChapter && isLastPage) {
@@ -154,7 +127,7 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
       history.pushState({}, "", nextLink);
       document.title = getTitle(
         manga,
-        ...getNextPlaceInManga(isLastPage, nextChapter!, chapter!, pageNum)
+        ...getNextPlaceInManga(isLastPage, nextChapter!, chapter!, pageNum),
       );
     }
   };
@@ -164,15 +137,15 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
 
     const { chapterNum, pageNum } = getPlaceInManga(document.URL);
     const [prevChapter, chapter, _] = getItemAndAdjacents(
-      chapters,
-      (c) => c.chapterNum === chapterNum
+      manga.chapters,
+      (c) => c.chapterNum === chapterNum,
     );
 
     const { isFirstChapter, isFirstPage, prevLink } = getPrevPageInfo(
       manga,
       pageNum,
       chapter!,
-      prevChapter
+      prevChapter,
     );
     if (isFirstChapter && isFirstPage) {
       navigate(prevLink);
@@ -180,7 +153,7 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
       history.pushState({}, "", prevLink);
       document.title = getTitle(
         manga,
-        ...getPrevPlaceInManga(isFirstPage, prevChapter!, chapter!, pageNum)
+        ...getPrevPlaceInManga(isFirstPage, prevChapter!, chapter!, pageNum),
       );
     }
   };
@@ -188,8 +161,8 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
   const hasNavigated = () => {
     const { chapterNum, pageNum } = getPlaceInManga(document.URL);
     const [prevChapter, chapter, nextChapter] = getItemAndAdjacents(
-      chapters,
-      (c) => c.chapterNum === chapterNum
+      manga.chapters,
+      (c) => c.chapterNum === chapterNum,
     );
 
     const img = new Image();
@@ -204,13 +177,13 @@ const chapterPageCounts = chapters.map((c) => c.pageCount);
         manga,
         pageNum,
         chapter!,
-        nextChapter
+        nextChapter,
       );
       const { prevSrc } = getPrevPageInfo(
         manga,
         pageNum,
         chapter!,
-        prevChapter
+        prevChapter,
       );
 
       if (nextSrc) {

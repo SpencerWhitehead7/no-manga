@@ -1,20 +1,15 @@
 ---
 import { Repo } from "@/db/repo";
 
-import Layout from "src/layouts/Layout.astro";
-
 const { id } = Astro.params;
 const repo = new Repo(Astro.locals.runtime.env.DB);
 
-const manga = await repo.getFullManga(Number(id));
+const manga = await repo.getManga(Number(id));
 if (!manga) {
   Astro.response.status = 404;
   Astro.response.statusText = "Manga not found";
   return Astro.rewrite("/404");
 }
----
 
-<Layout title={manga.name}>
-  <h1>Manga {id} - {manga.name}</h1>
-  <p>{JSON.stringify(manga)}</p>
-</Layout>
+return Astro.redirect(`${id}/${manga.slug}`);
+---

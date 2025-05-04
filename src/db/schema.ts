@@ -6,7 +6,7 @@ import type {
   Magazine,
   Manga,
   Mangaka,
-} from "../schema";
+} from "../../drizzle/schema";
 import {
   chapter,
   demo,
@@ -18,7 +18,7 @@ import {
   mangaGenre,
   mangaka,
   mangaMangakaJob,
-} from "../schema";
+} from "../../drizzle/schema";
 
 export type { Chapter, Demo, Genre, Job, Magazine, Manga, Mangaka };
 

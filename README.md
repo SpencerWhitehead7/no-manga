@@ -57,7 +57,8 @@ From back to front:
 
 - Cloudflare D1 Sqlite database
 - Cloudflare CDN serving images
-- Cloudflare pages serving mixed static and SSR Astro site
+- Cloudflare pages serving SSR Astro site
+- Cloudflare cache doing ISG for the SSRed pages
 - Webtorrent serving images peer to peer (I am real excited about this bit)
 
 ### Weird side effects

@@ -41,10 +41,10 @@ export const magazine = sqliteTable(
       .references(() => demo.name)
       .notNull(),
   },
-  (table) => ({
-    idxName: index("idx_magazine_name").on(table.name),
-    idxDemo: index("idx_magazine_demo").on(table.demo),
-  }),
+  (table) => [
+    index("idx_magazine_name").on(table.name),
+    index("idx_magazine_demo").on(table.demo),
+  ],
 );
 export type Magazine = typeof magazine.$inferSelect;
 export type NewMagazine = typeof magazine.$inferInsert;
@@ -59,9 +59,7 @@ export const mangaka = sqliteTable(
       .$type<string[]>(),
     description: text("description").notNull(),
   },
-  (table) => ({
-    idxName: index("idx_mangaka_name").on(table.name),
-  }),
+  (table) => [index("idx_mangaka_name").on(table.name)],
 );
 export type Mangaka = typeof mangaka.$inferSelect;
 export type NewMangaka = typeof mangaka.$inferInsert;
@@ -81,10 +79,10 @@ export const manga = sqliteTable(
     startDate: integer("start_date", { mode: "timestamp" }).notNull(),
     endDate: integer("end_date", { mode: "timestamp" }),
   },
-  (table) => ({
-    idxName: index("idx_manga_name").on(table.name),
-    idxDemo: index("idx_manga_demo").on(table.demo),
-  }),
+  (table) => [
+    index("idx_manga_name").on(table.name),
+    index("idx_manga_demo").on(table.demo),
+  ],
 );
 export type Manga = typeof manga.$inferSelect;
 export type NewManga = typeof manga.$inferInsert;
@@ -102,11 +100,11 @@ export const chapter = sqliteTable(
       sql`CURRENT_TIMESTAMP`,
     ),
   },
-  (table) => ({
-    pk: primaryKey(table.mangaId, table.chapterNum),
-    idxChapterMangaId: index("idx_chapter_manga_id").on(table.mangaId),
-    idxChapterUpdatedAt: index("idx_chapter_updated_at").on(table.updatedAt),
-  }),
+  (table) => [
+    primaryKey({ columns: [table.mangaId, table.chapterNum] }),
+    index("idx_chapter_manga_id").on(table.mangaId),
+    index("idx_chapter_updated_at").on(table.updatedAt),
+  ],
 );
 export type Chapter = typeof chapter.$inferSelect;
 export type NewChapter = typeof chapter.$inferInsert;
@@ -129,14 +127,10 @@ export const magazineManga = sqliteTable(
       .references(() => manga.id)
       .notNull(),
   },
-  (table) => ({
-    idxMagazineMangaMagazineId: index("idx_magazine_manga_magazine_id").on(
-      table.magazineId,
-    ),
-    idxMagazineMangaMangaId: index("idx_magazine_manga_manga_id").on(
-      table.mangaId,
-    ),
-  }),
+  (table) => [
+    index("idx_magazine_manga_magazine_id").on(table.magazineId),
+    index("idx_magazine_manga_manga_id").on(table.mangaId),
+  ],
 );
 
 export const mangaMangakaJob = sqliteTable(
@@ -152,18 +146,11 @@ export const mangaMangakaJob = sqliteTable(
       .references(() => job.name)
       .notNull(),
   },
-  (table) => ({
-    uniqueMangaMangaka: unique("unique_manga_mangaka").on(
-      table.mangaId,
-      table.mangakaId,
-    ),
-    idxMangaMangakaJobMangaId: index("idx_manga_mangaka_job_manga_id").on(
-      table.mangaId,
-    ),
-    idxMangaMangakaJobMangakaId: index("idx_manga_mangaka_job_mangaka_id").on(
-      table.mangakaId,
-    ),
-  }),
+  (table) => [
+    unique("unique_manga_mangaka").on(table.mangaId, table.mangakaId),
+    index("idx_manga_mangaka_job_manga_id").on(table.mangaId),
+    index("idx_manga_mangaka_job_mangaka_id").on(table.mangakaId),
+  ],
 );
 
 export const mangaGenre = sqliteTable(
@@ -176,13 +163,10 @@ export const mangaGenre = sqliteTable(
       .references(() => genre.name)
       .notNull(),
   },
-  (table) => ({
-    uniqueMangaGenre: unique("unique_manga_genre").on(
-      table.mangaId,
-      table.genre,
-    ),
-    idxMangaGenreMangaId: index("idx_manga_genre_manga_id").on(table.mangaId),
-    idxMangaGenreGenre: index("idx_manga_genre_genre").on(table.genre),
-  }),
+  (table) => [
+    unique("unique_manga_genre").on(table.mangaId, table.genre),
+    index("idx_manga_genre_manga_id").on(table.mangaId),
+    index("idx_manga_genre_genre").on(table.genre),
+  ],
 );
 // -- RELATIONS END --

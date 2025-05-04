@@ -1,5 +1,17 @@
+name = "no-manga"
+main = "./dist/_worker.js/index.js"
+compatibility_date = "2025-05-05"
+
+[assets]
+binding = "ASSETS"
+directory = "./dist"
+
+
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
 database_name = "no-manga"
 database_id = "9922ba88-a9f9-4e73-9089-115439f22200"
 preview_database_id = "DB" # required for preview
+
+[observability]
+enabled = true
